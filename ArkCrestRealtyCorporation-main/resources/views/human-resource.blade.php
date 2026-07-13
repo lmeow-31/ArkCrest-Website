@@ -18,7 +18,7 @@
 </div>
 
 {{-- Stats Cards --}}
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin-bottom:32px;"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,380px));gap:20px;margin-bottom:32px;">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,380px));gap:20px;margin-bottom:32px;">
     <div style="background:white;border-radius:12px;padding:28px 24px;display:flex;align-items:center;gap:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);border-left:5px solid #1e4575;">
         <div style="width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,#1e4575,#2563eb);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
             <svg width="24" height="24" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
@@ -97,17 +97,34 @@
 </div>
 
 {{-- Form Modal --}}
-<div id="hrFormModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;align-items:flex-start;justify-content:center;overflow-y:auto;padding:30px 20px;" onclick="if(event.target===this)closeHrForm()">
-    <div style="background:white;border-radius:14px;width:680px;max-width:96vw;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden;">
-        <div id="hrFormHeader" style="padding:14px 20px;display:flex;align-items:center;justify-content:space-between;">
-            <span id="hrFormTitle" style="font-size:14px;font-weight:700;color:white;"></span>
-            <div style="display:flex;gap:8px;">
+<div id="hrFormModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closeHrForm()">
+    <div style="background:white;border-radius:14px;width:95vw;max-width:1100px;max-height:90vh;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden;display:flex;flex-direction:column;">
+        <div id="hrFormHeader" style="padding:14px 20px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0;">
+            <span id="hrFormTitle" style="font-size:14px;font-weight:700;color:white;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;"></span>
+            <div style="display:flex;gap:8px;flex-shrink:0;">
                 <button onclick="saveHrForm()" style="padding:6px 14px;background:rgba(255,255,255,.2);color:white;border:1px solid rgba(255,255,255,.3);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">💾 Save</button>
                 <button onclick="printHrForm()" style="padding:6px 14px;background:rgba(255,255,255,.2);color:white;border:1px solid rgba(255,255,255,.3);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">🖨 Print</button>
                 <button onclick="closeHrForm()" style="padding:6px 12px;background:rgba(255,255,255,.15);color:white;border:none;border-radius:8px;font-size:16px;cursor:pointer;">&times;</button>
             </div>
         </div>
-        <div id="hrFormContent" style="padding:32px 40px;font-family:'Times New Roman',serif;font-size:13px;color:#111;"></div>
+        <div id="hrFormContent" style="padding:32px 40px;font-family:'Times New Roman',serif;font-size:13px;color:#111;flex:1;overflow-y:auto;"></div>
+    </div>
+</div>
+
+{{-- Confirmation Modal (used for delete confirmations) --}}
+<div id="confirmModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10002;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)_confirmModalCancel()">
+    <div style="background:white;border-radius:12px;max-width:380px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.3);padding:24px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <div style="width:36px;height:36px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="18" height="18" fill="none" stroke="#dc2626" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </div>
+            <div style="font-size:15px;font-weight:700;color:#0f172a;">Confirm Deletion</div>
+        </div>
+        <div id="confirmModalMessage" style="font-size:13px;color:#475569;margin-bottom:20px;line-height:1.5;"></div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;">
+            <button onclick="_confirmModalCancel()" style="padding:8px 16px;background:#f1f5f9;color:#334155;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Cancel</button>
+            <button onclick="_confirmModalYes()" style="padding:8px 16px;background:#dc2626;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Delete</button>
+        </div>
     </div>
 </div>
 
@@ -115,6 +132,42 @@
 var _hrLogo = "{{ asset('images/ArkCrest_Logo.png') }}";
 var _hrCsrf = document.querySelector('meta[name=csrf-token]').content;
 var _hrFormType = null;
+var _editingFormId = null; // set when editing an existing saved form, so Save updates instead of creating a new one
+
+/* ---------- reusable confirmation modal (used in place of window.confirm for deletes) ---------- */
+var _confirmModalCallback = null;
+function _showConfirmModal(message, onConfirm) {
+    document.getElementById('confirmModalMessage').textContent = message;
+    _confirmModalCallback = onConfirm;
+    document.getElementById('confirmModal').style.display = 'flex';
+}
+function _confirmModalYes() {
+    var cb = _confirmModalCallback;
+    document.getElementById('confirmModal').style.display = 'none';
+    _confirmModalCallback = null;
+    if (cb) cb();
+}
+function _confirmModalCancel() {
+    document.getElementById('confirmModal').style.display = 'none';
+    _confirmModalCallback = null;
+}
+
+/* ---------- lightweight toast notifications (used for save/delete feedback) ---------- */
+function _showToast(message, isError) {
+    var toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:'+(isError ? '#dc2626' : '#16a34a')+';color:white;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.2);z-index:10001;opacity:0;transform:translateY(10px);transition:all .25s ease;max-width:320px;';
+    document.body.appendChild(toast);
+    requestAnimationFrame(function () {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+    });
+    setTimeout(function () {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(function () { toast.remove(); }, 300);
+    }, 2600);
+}
 
 function openHrForm(type) {
     var modal = document.getElementById('hrFormModal');
@@ -125,11 +178,20 @@ function openHrForm(type) {
     var colors = {dayoff:'linear-gradient(135deg,#1e4575,#2563eb)', absences:'linear-gradient(135deg,#A37929,#d4a03a)', voucher:'linear-gradient(135deg,#0f2444,#1e4575)'};
     header.style.background = colors[type] || colors.dayoff;
     modal.style.display = 'flex';
+
+    // reset any "view only" / "editing" state from a previous open
+    _editingFormId = null;
+    var saveBtn = document.querySelector('#hrFormHeader [onclick="saveHrForm()"]');
+    if (saveBtn) saveBtn.style.display = '';
+
     if (type==='dayoff')   { title.textContent='Change Day-Off Form';    content.innerHTML=hrFormDayOff(); }
     else if (type==='absences') { title.textContent='Absences Report Form';   content.innerHTML=hrFormAbsences(); }
     else if (type==='voucher')  { title.textContent='Allowance Voucher ARCS'; content.innerHTML=hrFormVoucher(); }
 }
-function closeHrForm() { document.getElementById('hrFormModal').style.display='none'; }
+function closeHrForm() {
+    document.getElementById('hrFormModal').style.display='none';
+    _editingFormId = null;
+}
 function saveHrForm() {
     var type = document.getElementById('hrFormModal').getAttribute('data-type');
     var fields = {};
@@ -137,48 +199,118 @@ function saveHrForm() {
         fields['field_'+i] = el.value;
     });
     var csrf = document.querySelector('meta[name=csrf-token]').content;
+    var isEditing = !!_editingFormId;
+    var oldId = _editingFormId;
+
+    // Always create the (possibly edited) record via the existing create endpoint.
     fetch('/api/hr-forms', {
         method: 'POST',
         headers: {'Content-Type':'application/json','X-CSRF-TOKEN':csrf},
         body: JSON.stringify({type: type, data: fields})
     }).then(function(r){return r.json();}).then(function(d){
-        if (d.success) {
-            // Show saved toast
-            var btn = document.querySelector('[onclick="saveHrForm()"]');
-            if (btn) { btn.textContent = '✓ Saved!'; btn.style.background='rgba(34,197,94,.3)'; setTimeout(function(){ btn.textContent='💾 Save'; btn.style.background='rgba(255,255,255,.2)'; },2000); }
-            loadSavedForms();
+        if (!d.success) {
+            _showToast('Failed to save the form.', true);
+            return;
         }
+        var finish = function () {
+            var btn = document.querySelector('#hrFormHeader [onclick="saveHrForm()"]');
+            if (btn) { btn.textContent = isEditing ? '✓ Updated!' : '✓ Saved!'; btn.style.background='rgba(34,197,94,.3)'; setTimeout(function(){ btn.textContent='💾 Save'; btn.style.background='rgba(255,255,255,.2)'; },2000); }
+            _showToast(isEditing ? 'Form updated successfully.' : 'Form saved successfully.');
+            _editingFormId = null;
+            loadSavedForms();
+        };
+        if (isEditing && oldId) {
+            // The new version saved fine — now remove the old version using the existing delete endpoint.
+            // If this cleanup call fails for some reason, the updated form is still safely saved.
+            fetch('/api/hr-forms/'+oldId, {method:'DELETE',headers:{'X-CSRF-TOKEN':csrf}})
+                .then(finish)
+                .catch(finish);
+        } else {
+            finish();
+        }
+    }).catch(function(){
+        _showToast('Failed to save the form.', true);
     });
 }
 function printHrForm() {
-    var content = document.getElementById('hrFormContent').innerHTML;
+    var source = document.getElementById('hrFormContent');
+    var clone = source.cloneNode(true);
+    // innerHTML only serializes the *original* attributes/content of each
+    // element, not what the user actually typed — an <input>'s typed text
+    // lives in its .value property (never written back to the "value"
+    // attribute), and a <textarea>'s typed text lives in .value too (its
+    // innerHTML/child text node stays empty, since it started empty). That
+    // mismatch is why the print preview showed blank fields and an
+    // apparently "missing" Explanation box. Fix: copy each live value into
+    // the clone (as an attribute for inputs, as text content for
+    // textareas) before reading its HTML.
+    var liveFields = source.querySelectorAll('input, textarea');
+    var cloneFields = clone.querySelectorAll('input, textarea');
+    liveFields.forEach(function (live, i) {
+        var c = cloneFields[i];
+        if (!c) return;
+        if (live.tagName === 'TEXTAREA') {
+            c.textContent = live.value;
+        } else {
+            c.setAttribute('value', live.value);
+        }
+    });
+    var content = clone.innerHTML;
     var win = window.open('','_blank');
-    win.document.write('<html><head><title>HR Form</title><style>@page{size:letter;margin:.75in}body{font-family:"Times New Roman",serif;font-size:13px;color:#111;margin:0}table{border-collapse:collapse;width:100%}td,th{border:1px solid #111;padding:4px 8px}.nb td,.nb th{border:none}input,textarea{font-family:"Times New Roman",serif;font-size:13px;color:#111;}@media print{body{margin:0}input,textarea{border:none!important;outline:none!important;}}</style></head><body>'+content+'</body></html>');
+    var printHtml = '<html><head><title>HR Form</title><style>@page{size:letter;margin:.75in}body{font-family:"Times New Roman",serif;font-size:13px;color:#111;margin:0}table{border-collapse:collapse;width:100%}td,th{border:1px solid #111;padding:4px 8px}.nb td,.nb th{border:none}input,textarea{font-family:"Times New Roman",serif;font-size:13px;color:#111;}'
+        // Only strip the outline (browser focus-ring styling, irrelevant to print).
+        // A previous version also forced border:none!important here, which — because
+        // !important beats a plain inline style — wiped out every field's intentional
+        // border: the Explanation textarea's box (inline border:1px solid #111) and the
+        // underline (border-bottom) on every other text field. Removing that override
+        // restores both.
+        + '@media print{body{margin:0}input,textarea{outline:none!important;}}</style>'
+        // NOTE: the closing head tag below is split on purpose. Dev-only HTML injector tools
+        // (e.g. Laravel Boost's browser logger) scan raw response bodies for that literal
+        // closing tag text to insert a script tag. Since this string is inside a JS
+        // document.write() call (not a real closing head tag in the page itself), having it
+        // intact here gets matched and injected into, corrupting this script block.
+        // Splitting it keeps the printed document correct while avoiding an accidental match.
+        + '<' + '/head><body>'
+        + content
+        + '</body></html>';
+    win.document.write(printHtml);
     win.document.close(); win.focus(); setTimeout(function(){win.print();},400);
 }
 function _ul(w){return '<span style="display:inline-block;min-width:'+(w||160)+'px;border-bottom:1px solid #111;margin-left:4px;">&nbsp;</span>';}
-function _inp(w,ph){return '<input type="text" placeholder="'+(ph||'')+'" style="display:inline-block;width:'+(w||160)+'px;border:none;border-bottom:1px solid #111;margin-left:4px;font-family:inherit;font-size:inherit;outline:none;background:transparent;padding:0 2px;">';}
-function _ta(h){return '<textarea style="width:100%;height:'+(h||80)+'px;border:1px solid #111;font-family:inherit;font-size:inherit;resize:none;padding:4px;box-sizing:border-box;"></textarea>';}
 
-function _dayOffCopy(){
-    return '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">'+
+/* data-field lets us keep two printed "copies" of the same form in sync as the user types
+   (see the delegated input listener near the bottom of this script). Pass a field name only
+   when a value should mirror across copies; omit it for one-off/static inputs. */
+function _inp(w,ph,field){
+    var attr = field ? ' data-field="'+field+'"' : '';
+    return '<input type="text" placeholder="'+(ph||'')+'"'+attr+' style="display:inline-block;width:'+(w||160)+'px;border:none;border-bottom:1px solid #111;margin-left:4px;font-family:inherit;font-size:inherit;outline:none;background:transparent;padding:0 2px;">';
+}
+function _ta(h,field){
+    var attr = field ? ' data-field="'+field+'"' : '';
+    return '<textarea'+attr+' style="width:100%;height:'+(h||80)+'px;border:1px solid #111;font-family:inherit;font-size:inherit;resize:none;padding:4px;box-sizing:border-box;"></textarea>';
+}
+
+function _dayOffCopy(label){
+    return (label ? '<p style="font-style:italic;margin:0 0 4px;font-size:11px;">'+label+'</p>' : '')
+        + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">'+
         '<img src="'+_hrLogo+'" style="width:48px;height:48px;object-fit:contain;">'+
         '<h2 style="font-size:20px;font-weight:bold;margin:0;flex:1;text-align:center;">Change Day-Off Form</h2></div>'+
         '<table class="nb" style="margin-bottom:8px;font-size:12px;width:100%;"><tr>'+
-        '<td>Name:'+_inp(180)+'</td><td>Position:'+_inp(130)+'</td></tr><tr>'+
-        '<td>Previous Day-Off Schedule:'+_inp(110)+'</td><td>Department:'+_inp(130)+'</td></tr><tr>'+
-        '<td>New Day-Off Schedule:'+_inp(120)+'</td><td>Date (Week):'+_inp(130)+'</td></tr></table>'+
+        '<td>Name:'+_inp(180,'','name')+'</td><td>Position:'+_inp(130,'','position')+'</td></tr><tr>'+
+        '<td>Previous Day-Off Schedule:'+_inp(110,'','prev_dayoff')+'</td><td>Department:'+_inp(130,'','department')+'</td></tr><tr>'+
+        '<td>New Day-Off Schedule:'+_inp(120,'','new_dayoff')+'</td><td>Date (Week):'+_inp(130,'','date_week')+'</td></tr></table>'+
         '<div style="margin-bottom:4px;font-size:12px;">Reason:</div>'+
-        _ta(70)+
+        _ta(70,'reason')+
         '<table class="nb" style="font-size:12px;margin-top:12px;"><tr>'+
         '<td style="width:50%;">Approved by : <strong><u>Mr. Edwin Mojica</u></strong><br><small>(Chief Operating Officer)</small></td>'+
         '<td>Acknowledged by : <strong><u>Mr. Jossen Fernandez</u></strong><br><small>(President)</small></td></tr></table>';
 }
 
 function hrFormDayOff(){
-    return _dayOffCopy()+
+    return _dayOffCopy('Company Copy')+
         '<hr style="margin:18px 0;border:none;border-top:1px dashed #999;">'+
-        _dayOffCopy();
+        _dayOffCopy("Employee's Copy");
 }
 
 function hrFormAbsences(){
@@ -203,32 +335,44 @@ function hrFormVoucher(){
         '<div style="display:flex;align-items:center;justify-content:center;gap:8px;">'+
         '<img src="'+_hrLogo+'" style="width:26px;height:26px;object-fit:contain;">'+
         '<div><strong>ArkCrest Realty Corporation</strong><br>Allowance Voucher ARCS &nbsp;&nbsp; (36-2026)</div></div></td></tr>'+
-        '<tr><td>Employee Name:</td><td><input type="text" style="width:100%;border:none;border-bottom:1px solid #111;font-family:inherit;font-size:inherit;outline:none;"></td>'+
-        '<td>Designation:</td><td><input type="text" style="width:100%;border:none;border-bottom:1px solid #111;font-family:inherit;font-size:inherit;outline:none;"></td></tr>'+
-        '<tr><td>Pay Period:</td><td><input type="text" style="width:100%;border:none;border-bottom:1px solid #111;font-family:inherit;font-size:inherit;outline:none;"></td>'+
-        '<td>Department:</td><td><input type="text" style="width:100%;border:none;border-bottom:1px solid #111;font-family:inherit;font-size:inherit;outline:none;"></td></tr>'+
+        '<tr><td>Employee Name:</td><td><input type="text" data-field="emp_name" style="width:100%;border:none;border-bottom:1px solid #111;font-family:inherit;font-size:inherit;outline:none;"></td>'+
+        '<td>Designation:</td><td><input type="text" data-field="designation" style="width:100%;border:none;border-bottom:1px solid #111;font-family:inherit;font-size:inherit;outline:none;"></td></tr>'+
+        '<tr><td>Pay Period:</td><td><input type="text" data-field="pay_period" style="width:100%;border:none;border-bottom:1px solid #111;font-family:inherit;font-size:inherit;outline:none;"></td>'+
+        '<td>Department:</td><td><input type="text" data-field="department" style="width:100%;border:none;border-bottom:1px solid #111;font-family:inherit;font-size:inherit;outline:none;"></td></tr>'+
         '<tr><td><strong>Earnings</strong></td><td><strong>Amount</strong></td><td><strong>Deductions</strong></td><td><strong>Amount</strong></td></tr>'+
-        '<tr><td>Basic Pay:</td><td><input type="text" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td>'+
-        '<td>Number of Absences:</td><td><input type="text" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td></tr>'+
-        '<tr><td><input type="text" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td><td><input type="text" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td>'+
-        '<td><input type="text" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td><td><input type="text" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td></tr>'+
-        '<tr><td><input type="text" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td><td><input type="text" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td>'+
-        '<td><input type="text" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td><td><input type="text" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td></tr>'+
-        '<tr><td><input type="text" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td><td><input type="text" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td>'+
-        '<td><input type="text" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td><td><input type="text" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td></tr>'+
-        '<tr><td colspan="2" style="text-align:right;font-weight:bold;">Total Earnings: <input type="text" style="width:80px;border:none;border-bottom:1px solid #111;font-family:inherit;font-size:inherit;outline:none;"></td>'+
-        '<td style="font-weight:bold;text-align:right;">Total Deductions: <input type="text" style="width:60px;border:none;border-bottom:1px solid #111;font-family:inherit;font-size:inherit;outline:none;"></td><td></td></tr>'+
+        '<tr><td>Basic Pay:</td><td><input type="text" data-field="basic_pay" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td>'+
+        '<td>Number of Absences:</td><td><input type="text" data-field="absences_count" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td></tr>'+
+        '<tr><td><input type="text" data-field="earn_desc_2" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td><td><input type="text" data-field="earn_amt_2" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td>'+
+        '<td><input type="text" data-field="ded_desc_2" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td><td><input type="text" data-field="ded_amt_2" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td></tr>'+
+        '<tr><td><input type="text" data-field="earn_desc_3" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td><td><input type="text" data-field="earn_amt_3" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td>'+
+        '<td><input type="text" data-field="ded_desc_3" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td><td><input type="text" data-field="ded_amt_3" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td></tr>'+
+        '<tr><td><input type="text" data-field="earn_desc_4" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td><td><input type="text" data-field="earn_amt_4" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td>'+
+        '<td><input type="text" data-field="ded_desc_4" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td><td><input type="text" data-field="ded_amt_4" style="width:100%;border:none;font-family:inherit;font-size:inherit;outline:none;"></td></tr>'+
+        '<tr><td colspan="2" style="text-align:right;font-weight:bold;">Total Earnings: <input type="text" data-field="total_earnings" style="width:80px;border:none;border-bottom:1px solid #111;font-family:inherit;font-size:inherit;outline:none;"></td>'+
+        '<td style="font-weight:bold;text-align:right;">Total Deductions: <input type="text" data-field="total_deductions" style="width:60px;border:none;border-bottom:1px solid #111;font-family:inherit;font-size:inherit;outline:none;"></td><td></td></tr>'+
         '<tr><td colspan="3" style="text-align:right;font-weight:bold;">Net Pay: &#8369;</td>'+
-        '<td><input type="text" style="width:100%;border:none;border-bottom:1px solid #111;font-family:inherit;font-size:inherit;outline:none;font-weight:bold;"></td></tr></table>'+
+        '<td><input type="text" data-field="net_pay" style="width:100%;border:none;border-bottom:1px solid #111;font-family:inherit;font-size:inherit;outline:none;font-weight:bold;"></td></tr></table>'+
         '<table class="nb" style="font-size:12px;margin-bottom:6px;"><tr>'+
         '<td style="width:33%;">Prepared by:<br><br><u>Mr. Lourd Thristan Lobendino</u><br><small>Human Resource Associate</small></td>'+
         '<td style="width:33%;">Approved by:<br><br><u>Mr. Edwin Mojica</u><br><small>Chief Operating Officer</small></td>'+
-        '<td>Received by:<br><br><input type="text" style="width:120px;border:none;border-bottom:1px solid #111;font-family:inherit;font-size:inherit;outline:none;"><br><small>&nbsp;</small></td></tr></table>';
+        '<td>Received by:<br><br><input type="text" data-field="received_by" style="width:120px;border:none;border-bottom:1px solid #111;font-family:inherit;font-size:inherit;outline:none;"><br><small>&nbsp;</small></td></tr></table>';
     };
     return c("Employer\'s Copy")+
         '<hr style="margin:16px 0;border:none;border-top:1px dashed #999;">'+
         c("Employee\'s Copy");
 }
+
+/* Keep matching fields in sync across the two printed copies of a form as the user types.
+   Delegated on the (always-present) content container, so it works regardless of which
+   form is currently rendered inside it. */
+document.getElementById('hrFormContent').addEventListener('input', function(e){
+    var el = e.target;
+    var field = el.getAttribute('data-field');
+    if (!field) return;
+    document.querySelectorAll('#hrFormContent [data-field="'+field+'"]').forEach(function(other){
+        if (other !== el) other.value = el.value;
+    });
+});
 </script>
 
 {{-- Saved Forms Section --}}
@@ -252,6 +396,12 @@ function hrFormVoucher(){
     {{-- Folder Content --}}
     @foreach(['dayoff','absences','voucher'] as $ftype)
     <div id="folder-{{ $ftype }}" style="{{ $ftype === 'dayoff' ? '' : 'display:none;' }}background:white;border-radius:0 8px 8px 8px;box-shadow:0 2px 8px rgba(0,0,0,.06);padding:16px;">
+        @if(auth()->user()->isAdmin())
+        <div id="bulk-actions-{{ $ftype }}" style="display:none;align-items:center;justify-content:space-between;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;margin-bottom:12px;">
+            <span style="font-size:13px;color:#991b1b;font-weight:600;"><span id="bulk-count-{{ $ftype }}">0</span> selected</span>
+            <button onclick="deleteSelectedForms('{{ $ftype }}')" style="padding:6px 14px;background:#dc2626;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">Delete Selected</button>
+        </div>
+        @endif
         <div id="saved-list-{{ $ftype }}" style="font-size:13px;color:#94a3b8;text-align:center;padding:20px;">Loading...</div>
     </div>
     @endforeach
@@ -260,6 +410,7 @@ function hrFormVoucher(){
 <script>
 var _csrf2 = document.querySelector('meta[name=csrf-token]').content;
 var _activeFolder = 'dayoff';
+var _savedFormsCache = {}; // type -> last-fetched list, used by the View button
 
 function switchFolder(type) {
     _activeFolder = type;
@@ -281,37 +432,72 @@ function loadSavedForms(type) {
     type = type || _activeFolder;
     var container = document.getElementById('saved-list-'+type);
     if (!container) return;
+    var bulkBar = document.getElementById('bulk-actions-'+type);
+    if (bulkBar) bulkBar.style.display = 'none';
     fetch('/api/hr-forms?type='+type)
     .then(function(r){return r.json();})
     .then(function(list){
+        _savedFormsCache[type] = list;
         if (!list.length) {
             container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:20px;font-size:13px;">No saved forms yet.</div>';
             return;
         }
-        container.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:13px;">'+
-            '<thead><tr style="background:#f8fafc;"><th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;border-bottom:1px solid #e2e8f0;">Title</th>'+
-            '<th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;border-bottom:1px solid #e2e8f0;">Saved By</th>'+
-            '<th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;border-bottom:1px solid #e2e8f0;">Date</th>'+
+        container.innerHTML = '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">'+
+            '<table style="width:100%;min-width:680px;border-collapse:collapse;font-size:13px;">'+
+            '<thead><tr style="background:#f8fafc;">'+
+            '@if(auth()->user()->isAdmin())<th style="padding:8px 12px;border-bottom:1px solid #e2e8f0;width:32px;"><input type="checkbox" id="selectAll-'+type+'" onclick="toggleSelectAll(\''+type+'\')"></th>@endif'+
+            '<th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;border-bottom:1px solid #e2e8f0;white-space:nowrap;">Title</th>'+
+            '<th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;border-bottom:1px solid #e2e8f0;white-space:nowrap;">Saved By</th>'+
+            '<th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;border-bottom:1px solid #e2e8f0;white-space:nowrap;">Date</th>'+
             '<th style="padding:8px 12px;border-bottom:1px solid #e2e8f0;"></th></tr></thead><tbody>'+
-            list.map(function(f){
+            list.map(function(f, idx){
                 return '<tr style="border-bottom:1px solid #f1f5f9;">'+
-                    '<td style="padding:10px 12px;font-weight:600;color:#0f172a;">'+f.title+'</td>'+
-                    '<td style="padding:10px 12px;color:#64748b;">'+f.created_by+'</td>'+
-                    '<td style="padding:10px 12px;color:#94a3b8;font-size:12px;">'+f.created_at+'</td>'+
+                    '@if(auth()->user()->isAdmin())<td style="padding:10px 12px;"><input type="checkbox" class="row-checkbox-'+type+'" value="'+f.id+'" onclick="updateBulkDeleteBar(\''+type+'\')"></td>@endif'+
+                    '<td style="padding:10px 12px;font-weight:600;color:#0f172a;word-break:break-word;">'+f.title+'</td>'+
+                    '<td style="padding:10px 12px;color:#64748b;white-space:nowrap;">'+f.created_by+'</td>'+
+                    '<td style="padding:10px 12px;color:#94a3b8;font-size:12px;white-space:nowrap;">'+f.created_at+'</td>'+
                     '<td style="padding:10px 12px;text-align:right;white-space:nowrap;">'+
-                    '<button onclick="openSavedForm(\''+f.type+'\','+JSON.stringify(f.data).replace(/'/g,"\\'")+',\''+f.title+'\')" style="padding:4px 10px;background:#eff6ff;color:#1e4575;border:1px solid #bfdbfe;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;margin-right:4px;">Open</button>'+
+                    '<button onclick="viewSavedForm(\''+type+'\','+idx+')" style="padding:4px 10px;background:#e0e7ff;color:#3730a3;border:1px solid #c7d2fe;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;margin-right:6px;">View</button>'+
+                    '<button onclick="editSavedForm(\''+type+'\','+idx+')" style="padding:4px 10px;background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;margin-right:6px;">Edit</button>'+
                     '@if(auth()->user()->isAdmin())<button onclick="deleteSavedForm('+f.id+',\''+type+'\')" style="padding:4px 10px;background:#fee2e2;color:#991b1b;border:1px solid #fecaca;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">Delete</button>@endif'+
                     '</td></tr>';
-            }).join('')+'</tbody></table>';
+            }).join('')+'</tbody></table></div>';
     });
 }
 
-function openSavedForm(type, data, title) {
+/* ---------- View ---------- */
+function viewSavedForm(type, idx) {
+    var list = _savedFormsCache[type] || [];
+    var f = list[idx];
+    if (!f) return;
     openHrForm(type);
-    document.getElementById('hrFormTitle').textContent = title;
-    // Fill in saved data after a short delay for DOM to render
+    document.getElementById('hrFormTitle').textContent = (f.title || '') + ' — View Only';
     setTimeout(function() {
         var inputs = document.querySelectorAll('#hrFormContent input, #hrFormContent textarea');
+        var data = f.data || {};
+        var keys = Object.keys(data);
+        inputs.forEach(function(el, i) {
+            if (keys[i] !== undefined) el.value = data[keys[i]];
+            el.setAttribute('readonly', 'readonly');
+            el.style.background = '#f1f5f9';
+            el.style.cursor = 'default';
+        });
+        var saveBtn = document.querySelector('#hrFormHeader [onclick="saveHrForm()"]');
+        if (saveBtn) saveBtn.style.display = 'none';
+    }, 100);
+}
+
+/* ---------- Edit ---------- */
+function editSavedForm(type, idx) {
+    var list = _savedFormsCache[type] || [];
+    var f = list[idx];
+    if (!f) return;
+    openHrForm(type); // opens a fresh, fully-editable form and resets _editingFormId to null
+    _editingFormId = f.id; // now mark it as an edit so Save updates this record instead of creating a new one
+    document.getElementById('hrFormTitle').textContent = (f.title || '') + ' — Editing';
+    setTimeout(function() {
+        var inputs = document.querySelectorAll('#hrFormContent input, #hrFormContent textarea');
+        var data = f.data || {};
         var keys = Object.keys(data);
         inputs.forEach(function(el, i) {
             if (keys[i] !== undefined) el.value = data[keys[i]];
@@ -319,10 +505,62 @@ function openSavedForm(type, data, title) {
     }, 100);
 }
 
+/* ---------- Single delete ---------- */
 function deleteSavedForm(id, type) {
-    if (!confirm('Delete this saved form?')) return;
-    fetch('/api/hr-forms/'+id, {method:'DELETE',headers:{'X-CSRF-TOKEN':_csrf2}})
-    .then(function(r){return r.json();}).then(function(){loadSavedForms(type);});
+    _showConfirmModal('Are you sure you want to delete this saved form? This action cannot be undone.', function () {
+        fetch('/api/hr-forms/'+id, {method:'DELETE',headers:{'X-CSRF-TOKEN':_csrf2}})
+        .then(function(r){return r.json();})
+        .then(function(res){
+            if (res && res.success === false) {
+                _showToast('Failed to delete the form.', true);
+            } else {
+                _showToast('Form deleted successfully.');
+            }
+            loadSavedForms(type);
+        })
+        .catch(function(){
+            _showToast('Failed to delete the form.', true);
+        });
+    });
+}
+
+/* ---------- Select all / bulk delete ---------- */
+function toggleSelectAll(type) {
+    var master = document.getElementById('selectAll-'+type);
+    document.querySelectorAll('.row-checkbox-'+type).forEach(function(cb){ cb.checked = master.checked; });
+    updateBulkDeleteBar(type);
+}
+
+function updateBulkDeleteBar(type) {
+    var checked = document.querySelectorAll('.row-checkbox-'+type+':checked');
+    var all = document.querySelectorAll('.row-checkbox-'+type);
+    var bar = document.getElementById('bulk-actions-'+type);
+    var countEl = document.getElementById('bulk-count-'+type);
+    var master = document.getElementById('selectAll-'+type);
+
+    if (bar) bar.style.display = checked.length > 0 ? 'flex' : 'none';
+    if (countEl) countEl.textContent = checked.length;
+    if (master) {
+        master.checked = all.length > 0 && checked.length === all.length;
+        master.indeterminate = checked.length > 0 && checked.length < all.length;
+    }
+}
+
+function deleteSelectedForms(type) {
+    var checked = document.querySelectorAll('.row-checkbox-'+type+':checked');
+    if (!checked.length) return;
+    var ids = Array.prototype.map.call(checked, function(cb){ return cb.value; });
+    _showConfirmModal('Delete '+ids.length+' selected form(s)? This action cannot be undone.', function () {
+        Promise.all(ids.map(function(id){
+            return fetch('/api/hr-forms/'+id, {method:'DELETE',headers:{'X-CSRF-TOKEN':_csrf2}});
+        })).then(function(){
+            _showToast(ids.length+' form(s) deleted successfully.');
+            loadSavedForms(type);
+        }).catch(function(){
+            _showToast('Some forms could not be deleted.', true);
+            loadSavedForms(type);
+        });
+    });
 }
 
 // Load on page ready

@@ -92,17 +92,21 @@
         </div>
 
         <!-- Charts Row -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+        <div class="charts-grid">
             <!-- Department Expenses Chart -->
             <div class="chart-card">
                 <h3 class="chart-title">Department Expenses Breakdown</h3>
-                <canvas id="deptExpensesChart"></canvas>
+                <div class="chart-canvas-wrap">
+                    <canvas id="deptExpensesChart"></canvas>
+                </div>
             </div>
 
             <!-- Expense Distribution Pie Chart -->
             <div class="chart-card">
                 <h3 class="chart-title">Expense Distribution</h3>
-                <canvas id="expenseDistributionChart"></canvas>
+                <div class="chart-canvas-wrap">
+                    <canvas id="expenseDistributionChart"></canvas>
+                </div>
             </div>
         </div>
 

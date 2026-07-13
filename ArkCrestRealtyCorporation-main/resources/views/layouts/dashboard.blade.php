@@ -47,6 +47,16 @@
     .table-wrapper::-webkit-scrollbar-thumb:hover,
     .table-container::-webkit-scrollbar-thumb:hover,
     .tbl-scroll::-webkit-scrollbar-thumb:hover { background:#475569; }
+    @media (max-width: 480px) {
+        #searchBar, #notesPanel, .notification-panel {
+            position: fixed !important;
+            top: 64px !important;
+            left: 10px !important;
+            right: 10px !important;
+            width: auto !important;
+            max-width: calc(100vw - 20px) !important;
+        }
+    }
     </style>
 </head>
 <body>
@@ -493,22 +503,136 @@
                     </li>
                     @endif
                     
-                    <!-- Settings -->
-                    <li>
-                        <a href="{{ route('settings') }}" class="nav-item" data-page="settings">
-                            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            </svg>
-                            <span class="sidebar-text">Settings</span>
-                        </a>
+                    <!-- Settings with Dropdown -->
+                    <li class="nav-item-wrapper">
+                        <div class="nav-item-container">
+                            <a href="{{ route('settings') }}" class="nav-item nav-item-with-dropdown" data-page="settings" onclick="event.stopPropagation();">
+                                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                                <span class="sidebar-text">Settings</span>
+                            </a>
+                            <button class="dropdown-toggle-btn" id="settingsDropdownToggle" type="button" onclick="toggleSettingsDropdown(event)">
+                                <svg class="dropdown-arrow" id="settingsArrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <ul class="nav-submenu" id="settingsSubmenu">
+                            <li class="nav-submenu-label">Account</li>
+                            <li>
+                                <a href="{{ route('settings') }}?panel=profile" class="nav-subitem" data-page="settings-profile">
+                                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                    <span class="sidebar-text">My Profile</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('settings') }}?panel=employee-info" class="nav-subitem" data-page="settings-employee-info">
+                                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2"/></svg>
+                                    <span class="sidebar-text">About Me</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('settings') }}?panel=system" class="nav-subitem" data-page="settings-system">
+                                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+                                    <span class="sidebar-text">System Info</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('settings') }}?panel=notes" class="nav-subitem" data-page="settings-notes">
+                                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                    <span class="sidebar-text">My Notes</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('settings') }}?panel=privacy" class="nav-subitem" data-page="settings-privacy">
+                                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                                    <span class="sidebar-text">Privacy &amp; Policy</span>
+                                </a>
+                            </li>
+                            @php
+                                $isAdminUser = auth()->check() && auth()->user()->isAdmin();
+                                $sHiddenGlobal = array_values(json_decode(\DB::table('app_settings')->where('key', 'hidden_pages')->value('value') ?? '[]', true) ?: []);
+                                $canSeeSetting = fn($k) => $isAdminUser || !in_array($k, $sHiddenGlobal);
+                            @endphp
+                            @if($isAdminUser || array_filter(['settings.users','settings.visibility','settings.activity','settings.deleted','settings.permissions','settings.teams','settings.period-lock'], fn($k) => !in_array($k, $sHiddenGlobal)))
+                            <li class="nav-submenu-label">Admin</li>
+                            @endif
+                            @if($canSeeSetting('settings.users'))
+                            <li>
+                                <a href="{{ route('settings') }}?panel=users" class="nav-subitem" data-page="settings-users">
+                                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                                    <span class="sidebar-text">User Management</span>
+                                </a>
+                            </li>
+                            @endif
+                            @if($isAdminUser || $canSeeSetting('settings.visibility'))
+                            <li>
+                                <a href="{{ route('settings') }}?panel=visibility" class="nav-subitem" data-page="settings-visibility">
+                                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    <span class="sidebar-text">Page Visibility</span>
+                                </a>
+                            </li>
+                            @endif
+                            @if($canSeeSetting('settings.activity'))
+                            <li>
+                                <a href="{{ route('settings') }}?panel=activity" class="nav-subitem" data-page="settings-activity">
+                                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                    <span class="sidebar-text">Activity Log</span>
+                                </a>
+                            </li>
+                            @endif
+                            @if($canSeeSetting('settings.deleted'))
+                            <li>
+                                <a href="{{ route('settings') }}?panel=deleted" class="nav-subitem" data-page="settings-deleted">
+                                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    <span class="sidebar-text">Deleted Records</span>
+                                </a>
+                            </li>
+                            @endif
+                            @if($canSeeSetting('settings.permissions'))
+                            <li>
+                                <a href="{{ route('settings') }}?panel=permission-requests" class="nav-subitem" data-page="settings-permission-requests">
+                                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                                    <span class="sidebar-text">Permission Requests</span>
+                                    @php $pendingPerms = \App\Models\PermissionRequest::where('status','pending')->count(); @endphp
+                                    @if($pendingPerms > 0)<span style="background:#ef4444;color:white;border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:auto;">{{ $pendingPerms }}</span>@endif
+                                </a>
+                            </li>
+                            @endif
+                            @if($canSeeSetting('settings.teams'))
+                            <li>
+                                <a href="{{ route('settings') }}?panel=teams" class="nav-subitem" data-page="settings-teams">
+                                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                    <span class="sidebar-text">Team Management</span>
+                                </a>
+                            </li>
+                            @endif
+                            @if($isAdminUser)
+                            <li>
+                                <a href="{{ route('settings') }}?panel=properties" class="nav-subitem" data-page="settings-properties">
+                                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                                    <span class="sidebar-text">Property Management</span>
+                                </a>
+                            </li>
+                            @endif
+                            @if($canSeeSetting('settings.period-lock'))
+                            <li>
+                                <a href="{{ route('settings') }}?panel=period-lock" class="nav-subitem" data-page="settings-period-lock">
+                                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                    <span class="sidebar-text">Period Lock</span>
+                                </a>
+                            </li>
+                            @endif
+                        </ul>
                     </li>
                 </ul>
             </nav>
 
             <!-- Logout Button -->
             <div class="logout-section">
-                <form method="POST" action="{{ route('logout') }}">
+                <form method="POST" action="{{ route('logout') }}" data-confirm="Are you sure you want to log out?">
                     @csrf
                     <button type="submit" class="nav-item logout-btn">
                         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -531,6 +655,22 @@
             </div>
         </div>
     </div>
+
+    <script>
+    // Fix: modals inside .main-content get clipped because .main-content,
+    // .content-wrapper and .dashboard-container all use overflow:hidden.
+    // A position:fixed element is still clipped by an overflow:hidden ancestor,
+    // so it never expands to fill the whole screen. Moving each modal to be a
+    // direct child of <body> takes it out of that clipped subtree while
+    // keeping its id (so existing onclick/getElementById code keeps working).
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.main-content *').forEach(function (el) {
+            if (window.getComputedStyle(el).position === 'fixed') {
+                document.body.appendChild(el);
+            }
+        });
+    });
+    </script>
 
     <script>
     // Close on Escape key - go back
@@ -740,6 +880,25 @@
                 }
             }
         }
+        // Settings Dropdown Toggle
+        function toggleSettingsDropdown(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const submenu = document.getElementById('settingsSubmenu');
+            const arrow = document.getElementById('settingsArrow');
+            if (submenu && arrow) {
+                const isOpen = submenu.classList.contains('open');
+                if (isOpen) {
+                    submenu.classList.remove('open');
+                    arrow.classList.remove('open');
+                    localStorage.setItem('settingsDropdownOpen', 'false');
+                } else {
+                    submenu.classList.add('open');
+                    arrow.classList.add('open');
+                    localStorage.setItem('settingsDropdownOpen', 'true');
+                }
+            }
+        }
 
         // Restore dropdown state on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -779,6 +938,24 @@
             if (formsShouldBeOpen && formsSubmenu && formsArrow) {
                 formsSubmenu.classList.add('open');
                 formsArrow.classList.add('open');
+            }
+
+            // Restore Settings dropdown
+            const settingsSubmenu = document.getElementById('settingsSubmenu');
+            const settingsArrow = document.getElementById('settingsArrow');
+            const isSettingsPage = currentPage.includes('/settings');
+            const settingsShouldBeOpen = localStorage.getItem('settingsDropdownOpen') === 'true' || isSettingsPage;
+            if (settingsShouldBeOpen && settingsSubmenu && settingsArrow) {
+                settingsSubmenu.classList.add('open');
+                settingsArrow.classList.add('open');
+            }
+
+            // Highlight the active Settings subitem based on ?panel=
+            if (isSettingsPage) {
+                const activePanel = new URLSearchParams(window.location.search).get('panel') || 'profile';
+                document.querySelectorAll('#settingsSubmenu .nav-subitem').forEach(a => {
+                    a.classList.toggle('active', a.getAttribute('data-page') === 'settings-' + activePanel);
+                });
             }
         });
         
@@ -1641,6 +1818,13 @@ document.addEventListener('DOMContentLoaded', function() {
         return true; // fallback — handled below
     };
 
+    // Expose the real custom confirm modal so other pages/scripts can await it
+    // directly (window.confirm above always returns true immediately and has
+    // no visual popup, so any code that needs a real yes/no prompt outside of
+    // the form[onsubmit="confirm(...)"] auto-conversion below must call
+    // window.showConfirmModal(message).then(confirmed => ...) instead).
+    window.showConfirmModal = showConfirmModal;
+
     // Intercept all form submissions with onsubmit confirm
     document.addEventListener('submit', function(e) {
         var form = e.target;
@@ -1668,5 +1852,84 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 })();
 </script>
+
+@if(request()->routeIs('dashboard'))
+<script>
+(function() {
+    var FLAG = 'dashboardTrapArmed';
+
+    function armTrap() {
+        history.pushState({ dashboardTrap: true }, '', window.location.href);
+    }
+
+    function getNavType() {
+        try {
+            var nav = performance.getEntriesByType('navigation')[0];
+            if (nav) return nav.type;
+        } catch (err) {}
+        return null;
+    }
+
+    function checkAndArm() {
+        var wasArmed = sessionStorage.getItem(FLAG) === '1';
+        var navType = getNavType();
+        if (navType === 'back_forward' && wasArmed) {
+            showBackTrapModal();
+        }
+        sessionStorage.setItem(FLAG, '1');
+        armTrap();
+    }
+
+    checkAndArm();
+
+    window.addEventListener('pageshow', function(e) {
+        if (e.persisted) {
+            var wasArmed = sessionStorage.getItem(FLAG) === '1';
+            if (wasArmed) showBackTrapModal();
+            sessionStorage.setItem(FLAG, '1');
+            armTrap();
+        }
+    });
+
+    window.addEventListener('popstate', function() {
+        armTrap();
+        showBackTrapModal();
+    });
+
+    // Leaving the dashboard on purpose (clicking a link, submitting a form
+    // like logout) disarms the trap so a fresh visit later stays silent.
+    document.addEventListener('click', function(e) {
+        var link = e.target.closest && e.target.closest('a[href]');
+        if (link && link.href && link.origin === window.location.origin) {
+            sessionStorage.removeItem(FLAG);
+        }
+    }, true);
+
+    document.addEventListener('submit', function() {
+        sessionStorage.removeItem(FLAG);
+    }, true);
+
+    function showBackTrapModal() {
+        var modal = document.getElementById('backTrapModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            return;
+        }
+        modal = document.createElement('div');
+        modal.id = 'backTrapModal';
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999999;display:flex;align-items:center;justify-content:center;';
+        modal.innerHTML =
+            '<div style="background:white;border-radius:16px;padding:28px 32px;max-width:380px;width:90vw;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.25);">' +
+                '<div style="font-size:15px;font-weight:600;color:#0f172a;margin-bottom:16px;">Please log out first before leaving this page.</div>' +
+                '<button id="backTrapOk" style="padding:10px 24px;background:linear-gradient(135deg,#ef4444,#dc2626);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">OK</button>' +
+            '</div>';
+        document.body.appendChild(modal);
+        document.getElementById('backTrapOk').addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+    }
+})();
+</script>
+@endif
 </body>
 </html>

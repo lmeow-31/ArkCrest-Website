@@ -377,7 +377,8 @@
     background: #ffffff;
     border-radius: 16px;
     border: 3px solid #1e4575;
-    overflow: hidden;
+    overflow: visible;
+    max-height: none;
     box-shadow: 0 8px 24px rgba(30, 69, 117, 0.15);
 }
 
@@ -502,6 +503,7 @@
 /* Requests Table */
 .requests-table {
     width: 100%;
+    min-width: 2000px;
     border-collapse: separate;
     border-spacing: 0;
 }
@@ -521,6 +523,7 @@
     letter-spacing: 0.8px;
     font-size: 11px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
 }
 
 .requests-table thead th:last-child {
@@ -537,6 +540,7 @@
     font-size: 12px;
     transition: all 0.3s ease;
     vertical-align: middle;
+    white-space: nowrap;
 }
 
 .requests-table tbody td:last-child {
@@ -983,8 +987,8 @@
 
     .requests-table-container {
         width: 100%;
-        overflow: hidden;
-    }
+        overflow: visible;
+    }   
 
     .table-wrapper {
         overflow-x: auto;

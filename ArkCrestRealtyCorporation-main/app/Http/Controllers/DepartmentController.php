@@ -39,6 +39,12 @@ class DepartmentController extends Controller
     public function finance()
     {
         $department = Department::where('slug', 'finance')->first();
+        if (!$department) {
+            $department = Department::create(['name' => 'Finance', 'slug' => 'finance', 'allowable_budget' => 0]);
+            foreach (['Retention Fees', 'Penalty/ Fines', 'Tax and Licenses', 'Miscellaneous'] as $cat) {
+                ExpenseCategory::firstOrCreate(['department_id' => $department->id, 'name' => $cat]);
+            }
+        }
         $categories = $department->categories;
         $expenses = $department->expenses()->orderBy('expense_date', 'desc')->get();
         

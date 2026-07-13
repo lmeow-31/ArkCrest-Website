@@ -355,6 +355,17 @@
     border-radius: 12px;
     padding: 24px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    min-width: 0;      /* prevents the card from being forced wider than its grid column */
+    overflow: hidden;  /* NEW: clips anything that still tries to overflow, instead of pushing the whole page wider */
+}
+
+.chart-canvas-wrap {
+    position: relative;
+    height: 350px;
+    width: 100%;       /* NEW: force the canvas's container to the card's actual width */
+}
+.chart-canvas-wrap canvas {
+    max-width: 100% !important;  /* NEW: hard cap so Chart.js can never render wider than the container */
 }
 
 .chart-title {

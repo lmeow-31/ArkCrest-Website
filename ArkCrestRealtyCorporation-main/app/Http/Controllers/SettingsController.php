@@ -512,18 +512,12 @@ class SettingsController extends Controller
         $user = auth()->user();
         $request->validate([
             'name'     => 'required|string|max:255',
-            'password' => ['nullable', 'confirmed', \Illuminate\Validation\Rules\Password::min(8)->mixedCase()->numbers()->symbols()],
             'avatar'   => 'nullable|image|max:2048',
         ]);
 
         $data = ['name' => $request->name];
 
-        if ($request->filled('password')) {
-            $data['password'] = bcrypt($request->password);
-        }
-
         if ($request->hasFile('avatar')) {
-            // Delete old avatar
             if ($user->avatar) {
                 \Storage::disk('public')->delete($user->avatar);
             }
@@ -534,6 +528,24 @@ class SettingsController extends Controller
 
         $user->update($data);
         return redirect()->route('settings')->with('success', 'Profile updated successfully.')->with('open_section', 'profile');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $user = auth()->user();
+
+        $request->validate([
+            'current_password' => ['required'],
+            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::min(8)->mixedCase()->numbers()->symbols()],
+        ]);
+
+        if (!\Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'Your current password is incorrect.'])->with('open_section', 'profile');
+        }
+
+        $user->update(['password' => bcrypt($request->password)]);
+
+        return redirect()->route('settings')->with('success', 'Password updated successfully.')->with('open_section', 'profile');
     }
 
     public function savePrivacyPolicy(Request $request)

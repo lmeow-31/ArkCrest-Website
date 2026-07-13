@@ -24,6 +24,38 @@
 .btn-clear:hover{background:#e5e7eb;transform:translateY(-2px)}
 .btn-submit{background:#1e4575;color:white;box-shadow:0 2px 8px rgba(30,69,117,0.3)}
 .btn-submit:hover{background:#152e4d;transform:translateY(-2px)}
+
+/* Sticky checkbox + index columns for the records table */
+.cd-sticky-col{position:sticky;background:#fff;z-index:2}
+.cd-sticky-checkbox{left:0;width:40px;min-width:40px;max-width:40px;text-align:center}
+.cd-sticky-index{left:40px;width:52px;min-width:52px;max-width:52px;text-align:center;box-shadow:2px 0 4px -2px rgba(0,0,0,0.15)}
+thead .cd-sticky-col{background:#1e4575;z-index:3}
+tbody tr:hover .cd-sticky-col{background:#f8fafc}
+.cd-bulk-btn{padding:9px 14px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;background:#ef4444;color:#fff;transition:opacity .2s}
+.cd-bulk-btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* Records table polish */
+.cd-table-wrap{overflow-x:auto;overflow-y:hidden;border:1.5px solid #d0d5dd;border-radius:10px}
+/* Hide the native scrollbar — replaced by the custom #cdScrollTrack bar below the table, which is fully JS-driven and guaranteed to work regardless of OS/browser scrollbar quirks. */
+.cd-table-wrap::-webkit-scrollbar{display:none}
+.cd-table-wrap{scrollbar-width:none;-ms-overflow-style:none}
+.cd-scroll-track{position:relative;height:12px;background:#f1f5f9;border-radius:6px;margin-top:8px;cursor:pointer;display:none;user-select:none}
+.cd-scroll-thumb{position:absolute;top:1px;left:0;height:10px;background:#94a3b8;border-radius:5px;cursor:grab;transition:background .15s}
+.cd-scroll-thumb:hover{background:#64748b}
+.cd-scroll-thumb.dragging{cursor:grabbing;background:#475569}
+.cd-records-table{width:100%;border-collapse:collapse;font-size:13px}
+.cd-records-table th,.cd-records-table td{border-right:1px solid #eef1f5}
+.cd-records-table th:last-child,.cd-records-table td:last-child{border-right:none}
+.cd-records-table thead th{border-bottom:2px solid #16345c}
+.cd-records-table tbody tr:last-child td{border-bottom:none}
+#cdTableBody tr:hover td{background:#f8fafc}
+
+/* Mobile-responsive modals (restored from previous version) */
+@media (max-width: 768px) {
+    .cd-modal-overlay { padding: 0; }
+    .cd-modal-box { width: 100% !important; max-width: 100% !important; height: 100%; max-height: 100%; overflow-y: auto !important; -webkit-overflow-scrolling: touch; border-radius: 0 !important; }
+    .cd-modal-grid { grid-template-columns: 1fr !important; }
+}
 </style>
 
 <div class="cd-wrap">
@@ -61,8 +93,28 @@
                             style="width:100%;padding:12px 40px 12px 16px;border:2px solid #1e4575;border-radius:8px;font-size:14px;font-weight:500;background:white;color:#344054;box-sizing:border-box;">
                         <button type="button" onclick="toggleDevDropdown()" style="position:absolute;right:2px;top:50%;transform:translateY(-50%);width:36px;height:calc(100% - 4px);background:linear-gradient(135deg,#1e4575,#2563eb);color:white;border:none;border-radius:0 6px 6px 0;cursor:pointer;font-size:12px;">▼</button>
                         <div id="devDropdown" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;background:white;border:2px solid #1e4575;border-radius:8px;max-height:200px;overflow-y:auto;z-index:1000;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
-                            <div onclick="selectDev('758 Real Estate Management')" style="padding:12px 16px;cursor:pointer;font-size:14px;color:#374151;font-weight:500;border-bottom:1px solid #f3f4f6;" onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background=''">758 Real Estate Management</div>
-                            <div onclick="selectDev('Xceed Realty and Development Inc.')" style="padding:12px 16px;cursor:pointer;font-size:14px;color:#374151;font-weight:500;" onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background=''">Xceed Realty and Development Inc.</div>
+                            {{--
+                                FIX: this used to be a @foreach over a $developers variable passed from the
+                                controller. If that variable came back empty/undefined (e.g. a broken query,
+                                a renamed relationship, or the variable simply not being passed to the view),
+                                the loop silently rendered nothing and the whole dropdown looked "gone" even
+                                though the surrounding HTML/JS was fine.
+
+                                This version is defensive: it uses $developers if the controller provides it,
+                                and otherwise falls back to the two known developers so the dropdown can never
+                                render empty again. Add more names to the fallback array below, or — better —
+                                make sure your controller passes a $developers array/collection to this view,
+                                the same way it already does for something like $commissionRequests.
+                            --}}
+                            @php
+                                $developerOptions = (isset($developers) && count($developers)) ? $developers : [
+                                    '758 Real Estate Management',
+                                    'Xceed Realty and Development Inc.',
+                                ];
+                            @endphp
+                            @foreach($developerOptions as $dev)
+                            <div onclick="selectDev('{{ $dev }}')" style="padding:12px 16px;cursor:pointer;font-size:14px;color:#374151;font-weight:500;border-bottom:1px solid #f3f4f6;" onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background=''">{{ $dev }}</div>
+                            @endforeach
                         </div>
                     </div>
                 </div>
@@ -79,11 +131,11 @@
                     <input type="text" name="client_name" placeholder="Enter client name" required>
                 </div>
                 <div class="form-group">
-                    <label>LOT AREA</label>
-                    <input type="number" name="lot_area" id="f_lot_area" placeholder="0.0000" step="0.0001" min="0" oninput="computeTCP()">
+                    <label>LOT AREA <span class="required">*</span></label>
+                    <input type="number" name="lot_area" id="f_lot_area" placeholder="0.0000" step="0.0001" min="0" oninput="computeTCP()" required>
                 </div>
                 <div class="form-group">
-                    <label>PRICE PER SQM</label>
+                    <label>PRICE PER SQM <span class="required">*</span></label>
                     <input type="text" id="f_price_sqm_display" placeholder="0.00" oninput="onPriceSqmInput(this)" style="color:#374151;">
                     <input type="hidden" name="price_sqm" id="f_price_sqm">
                 </div>
@@ -93,8 +145,8 @@
                     <input type="hidden" name="tcp" id="f_tcp">
                 </div>
                 <div class="form-group">
-                    <label>DISCOUNT (%)</label>
-                    <input type="number" name="discount" id="f_discount_pct" placeholder="0.00" step="0.0000000001" min="0" max="100" oninput="computeDiscount()">
+                    <label>DISCOUNT (%) <span class="required">*</span></label>
+                    <input type="number" name="discount" id="f_discount_pct" placeholder="0.00" step="0.0000000001" min="0" max="100" oninput="computeDiscount()" required>
                 </div>
                 <div class="form-group">
                     <label>DISCOUNT VALUE <span style="font-size:11px;color:#9ca3af;font-weight:400">(auto)</span></label>
@@ -143,13 +195,13 @@
                 </div>
             </div>
             <input type="hidden" name="date_requested" value="{{ date('Y-m-d') }}">
-            
+
             <input type="hidden" name="property_details" value="">
             <input type="hidden" name="commission" value="">
             <input type="hidden" name="remarks" value="">
             <input type="hidden" name="commission_percent" value="">
             <div class="form-actions">
-                <button type="button" class="btn-clear" onclick="document.getElementById('commissionForm').reset()">
+                <button type="button" class="btn-clear" id="commissionClearBtn">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:18px;height:18px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     Clear
                 </button>
@@ -159,6 +211,21 @@
                 </button>
             </div>
         </form>
+
+        <!-- Duplicate Record Confirmation Modal (restored from previous version) -->
+        <div id="duplicateRecordModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+          <div style="background:white;border-radius:12px;padding:28px;max-width:420px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,0.2);">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <h3 style="margin:0;font-size:17px;color:#111827;">Can't be submitted</h3>
+            </div>
+            <p style="color:#4b5563;font-size:14px;margin:0 0 20px;">There's an existing data like this on the database.</p>
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+              <button type="button" onclick="closeDuplicateModal()" style="padding:9px 18px;border:1.5px solid #e2e8f0;background:white;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:#374151;">Close</button>
+              <button type="button" onclick="goToDuplicateRecord()" style="padding:9px 18px;border:none;background:#1e4575;color:white;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">Go to Same Record</button>
+            </div>
+          </div>
+        </div>
     </div>
 
     <!-- Table -->
@@ -168,10 +235,11 @@
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
                 <div class="cd-search-wrap" style="position:relative;">
                     <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#6b7280" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    <input type="text" id="cdSearch" placeholder="Search by name, agent, project... (space = AND)" style="width:320px;max-width:100%;padding:9px 12px 9px 36px;border:2px solid #d0d5dd;border-radius:8px;font-size:13px;box-sizing:border-box;outline:none;" oninput="cdFilter()">
+                    <input type="text" id="cdSearch" placeholder="Search name, agent, project, client, block & lot... (space = AND)" style="width:340px;max-width:100%;padding:9px 12px 9px 36px;border:2px solid #d0d5dd;border-radius:8px;font-size:13px;box-sizing:border-box;outline:none;" oninput="cdFilter()">
                 </div>
                 <select id="cdStatusFilter" onchange="cdFilter()" style="padding:9px 12px;border:2px solid #d0d5dd;border-radius:8px;font-size:13px;color:#374151;background:white;cursor:pointer;outline:none;">
                     <option value="">All Status</option>
+                    <option value="pending">Pending</option>
                     <option value="done">Done</option>
                     <option value="cancelled">Cancelled</option>
                     <option value="none">No Status</option>
@@ -213,13 +281,18 @@
                     </select>
                 </div>
                 <button onclick="document.getElementById('cdSearch').value='';document.getElementById('cdStatusFilter').value='';document.getElementById('cdReservationMonthFilter').value='';document.getElementById('cdDownpaymentMonthFilter').value='';cdFilter();" style="padding:9px 14px;background:#f1f5f9;border:2px solid #d0d5dd;border-radius:8px;font-size:13px;color:#64748b;cursor:pointer;">Clear</button>
+                <button id="cdBulkDeleteBtn" class="cd-bulk-btn" disabled onclick="cdDeleteSelected()">Delete Selected (0)</button>
                 <span id="cdCount" style="font-size:12px;color:#94a3b8;white-space:nowrap;"></span>
             </div>
         </div>
-        <div style="overflow-x:auto">
-            <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <div class="cd-table-wrap">
+            <table class="cd-records-table">
                 <thead style="background:linear-gradient(135deg,#1e4575,#2563eb)">
                     <tr>
+                        <th class="cd-sticky-col cd-sticky-checkbox" style="padding:14px 8px">
+                            <input type="checkbox" id="cdSelectAll" onchange="cdToggleSelectAll(this)" title="Select all">
+                        </th>
+                        <th class="cd-sticky-col cd-sticky-index" style="padding:14px 8px;color:white;text-transform:uppercase;font-size:11px;">#</th>
                         @foreach(['Developer','Project','Block & Lot','Client','Lot Area','Price/SQM','TCP','Discount (%)','Discount Value','Net TCP','Terms','Reservation Date','Units','Downpayment Date','Agent','Status','Downpayment Status','Actions'] as $h)
                         <th style="padding:14px 12px;text-align:left;font-weight:600;color:white;text-transform:uppercase;font-size:11px;white-space:nowrap">{{ $h }}</th>
                         @endforeach
@@ -227,7 +300,13 @@
                 </thead>
                 <tbody id="cdTableBody">
                     @forelse($commissionRequests ?? [] as $req)
-                    <tr data-id="{{ $req->id }}" style="border-bottom:1px solid #e5e7eb">
+                    <tr data-id="{{ $req->id }}"
+                        data-search="{{ strtolower($req->client_name ?? '') }} {{ strtolower($req->agent_name ?? '') }} {{ strtolower($req->project_name ?? '') }} {{ strtolower($req->developer_name ?? '') }} {{ strtolower($req->block_lot_number ?? '') }}"
+                        style="border-bottom:1px solid #e5e7eb">
+                        <td class="cd-sticky-col cd-sticky-checkbox" style="padding:14px 8px">
+                            <input type="checkbox" class="cd-row-checkbox" value="{{ $req->id }}" onchange="cdUpdateBulkBar()">
+                        </td>
+                        <td class="cd-sticky-col cd-sticky-index" style="padding:14px 8px;color:#374151;font-weight:600">{{ $loop->iteration }}</td>
                         <td style="padding:14px 12px;color:#374151;white-space:nowrap">{{ $req->developer_name ?? '-' }}</td>
                         <td style="padding:14px 12px;color:#374151;white-space:nowrap">{{ $req->project_name ?? '-' }}</td>
                         <td style="padding:14px 12px;color:#374151;white-space:nowrap">{{ $req->block_lot_number ?? '-' }}</td>
@@ -249,19 +328,26 @@
                         <td style="padding:10px 12px;white-space:nowrap">
                             <form method="POST" action="{{ route('client-database.status', $req->id) }}">
                                 @csrf @method('PATCH')
-                                <select name="client_status" onchange="this.form.submit()"
+                                <select id="csSel_{{ $req->id }}" name="client_status" onchange="this.form.submit()"
                                     data-client-status="{{ strtolower($req->client_status ?? '') }}"
                                     style="padding:5px 10px;border-radius:20px;font-size:12px;font-weight:600;border:none;cursor:pointer;outline:none;
-                                    background:{{ $req->client_status === 'Done' ? '#dcfce7' : ($req->client_status === 'Cancelled' ? '#fee2e2' : '#f1f5f9') }};
-                                    color:{{ $req->client_status === 'Done' ? '#166534' : ($req->client_status === 'Cancelled' ? '#991b1b' : '#64748b') }};">
+                                    background:{{ $req->client_status === 'Done' ? '#dcfce7' : ($req->client_status === 'Cancelled' ? '#fee2e2' : ($req->client_status === 'Pending' ? '#fef3c7' : '#f1f5f9')) }};
+                                    color:{{ $req->client_status === 'Done' ? '#166534' : ($req->client_status === 'Cancelled' ? '#991b1b' : ($req->client_status === 'Pending' ? '#92400e' : '#64748b')) }};">
                                     <option value="" {{ !$req->client_status ? 'selected' : '' }}>— Set Status —</option>
+                                    <option value="Pending" {{ $req->client_status === 'Pending' ? 'selected' : '' }} style="background:#fef3c7;color:#92400e;">Pending</option>
                                     <option value="Done" {{ $req->client_status === 'Done' ? 'selected' : '' }} style="background:#dcfce7;color:#166534;">Done</option>
                                     <option value="Cancelled" {{ $req->client_status === 'Cancelled' ? 'selected' : '' }} style="background:#fee2e2;color:#991b1b;">Cancelled</option>
                                 </select>
                             </form>
                         </td>
                         <td style="padding:10px 12px;white-space:nowrap">
-                            <button onclick="openDPModal({{ $req->id }}, {{ $req->downpayment_amount ?? 0 }}, {{ $req->downpayment_terms ?? 1 }}, {{ $req->downpayment_per_term ?? 0 }}, '{{ addslashes($req->downpayment_status ?? '') }}', '{{ $req->downpayment_date ? $req->downpayment_date->format('Y-m-d') : '' }}')"
+                            <button id="dpBtn_{{ $req->id }}" onclick="openDPModalFromBtn(this)"
+                                data-id="{{ $req->id }}"
+                                data-amount="{{ $req->downpayment_amount ?? 0 }}"
+                                data-terms="{{ $req->downpayment_terms ?? 1 }}"
+                                data-per-term="{{ $req->downpayment_per_term ?? 0 }}"
+                                data-status="{{ addslashes($req->downpayment_status ?? '') }}"
+                                data-dp-date="{{ $req->downpayment_date ? $req->downpayment_date->format('Y-m-d') : '' }}"
                                 style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;border:none;cursor:pointer;
                                 background:{{ $req->downpayment_status === 'Paid' || $req->downpayment_status === 'Spot Paid' ? '#dcfce7' : ($req->downpayment_status && $req->downpayment_status !== '— Set —' ? '#fef3c7' : '#f1f5f9') }};
                                 color:{{ $req->downpayment_status === 'Paid' || $req->downpayment_status === 'Spot Paid' ? '#166534' : ($req->downpayment_status && $req->downpayment_status !== '— Set —' ? '#92400e' : '#64748b') }};">
@@ -293,10 +379,13 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="15" style="text-align:center;padding:40px;color:#6b7280">No client records yet.</td></tr>
+                    <tr><td colspan="20" style="text-align:center;padding:40px;color:#6b7280">No client records yet.</td></tr>
                     @endforelse
                 </tbody>
             </table>
+        </div>
+        <div id="cdScrollTrack" class="cd-scroll-track">
+            <div id="cdScrollThumb" class="cd-scroll-thumb"></div>
         </div>
     </div>
 </div>
@@ -333,14 +422,14 @@
 </div>
 
 <!-- View Modal -->
-<div id="viewModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
-    <div style="background:white;border-radius:16px;width:95%;max-width:960px;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+<div id="viewModal" class="cd-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
+    <div class="cd-modal-box" style="background:white;border-radius:16px;width:95%;max-width:960px;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
         <div style="background:linear-gradient(135deg,#1e4575,#2563eb);color:white;padding:20px 24px;border-radius:16px 16px 0 0;display:flex;justify-content:space-between;align-items:center">
             <h3 style="margin:0;font-size:18px;font-weight:700">Commission Request Details</h3>
             <button onclick="document.getElementById('viewModal').style.display='none'" style="background:rgba(255,255,255,0.2);border:none;color:white;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:18px">✕</button>
         </div>
         <div style="padding:24px">
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px" id="viewContent"></div>
+            <div class="cd-modal-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px" id="viewContent"></div>
         </div>
         <div style="padding:16px 24px;border-top:1px solid #e5e7eb;display:flex;justify-content:flex-end">
             <button onclick="document.getElementById('viewModal').style.display='none'" style="padding:10px 20px;background:#f3f4f6;color:#374151;border:2px solid #d0d5dd;border-radius:8px;font-weight:600;cursor:pointer">Close</button>
@@ -349,8 +438,8 @@
 </div>
 
 <!-- Edit Modal -->
-<div id="editModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
-    <div style="background:white;border-radius:16px;width:95%;max-width:960px;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+<div id="editModal" class="cd-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
+    <div class="cd-modal-box" style="background:white;border-radius:16px;width:95%;max-width:960px;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
         <div style="background:linear-gradient(135deg,#1e4575,#2563eb);color:white;padding:20px 24px;border-radius:16px 16px 0 0;display:flex;justify-content:space-between;align-items:center">
             <h3 style="margin:0;font-size:18px;font-weight:700">Edit Commission Request</h3>
             <button onclick="document.getElementById('editModal').style.display='none'" style="background:rgba(255,255,255,0.2);border:none;color:white;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:18px">✕</button>
@@ -359,7 +448,7 @@
             @csrf @method('PUT')
             <input type="hidden" id="edit_id" name="id">
             <input type="hidden" id="edit_date_requested" name="date_requested">
-            <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+            <div class="cd-modal-grid" style="padding:24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
                 <div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;font-weight:700;color:#1e4575;text-transform:uppercase">Developer's Name</label><input type="text" id="edit_developer_name" name="developer_name" style="padding:10px 14px;border:2px solid #d0d5dd;border-radius:8px;font-size:14px"></div>
                 <div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;font-weight:700;color:#1e4575;text-transform:uppercase">Project Name *</label><input type="text" id="edit_project_name" name="project_name" required style="padding:10px 14px;border:2px solid #d0d5dd;border-radius:8px;font-size:14px"></div>
                 <div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;font-weight:700;color:#1e4575;text-transform:uppercase">Block & Lot Number</label><input type="text" id="edit_block_lot_number" name="block_lot_number" style="padding:10px 14px;border:2px solid #d0d5dd;border-radius:8px;font-size:14px"></div>
@@ -388,6 +477,29 @@
             </div>
             <div id="editFormError" style="display:none;margin:0 24px 16px;background:#fee2e2;color:#dc2626;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;"></div>
         </form>
+    </div>
+</div>
+
+<!-- Bulk Delete Confirm Modal -->
+<div id="cdBulkDeleteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center" onclick="if(event.target===this)cdCancelBulkDelete()">
+    <div style="background:white;border-radius:16px;max-width:420px;width:90%;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.2);">
+        <div style="background:linear-gradient(135deg,#dc2626,#ef4444);padding:18px 22px;display:flex;align-items:center;gap:12px;">
+            <div style="width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg fill="none" stroke="white" viewBox="0 0 24 24" style="width:18px;height:18px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </div>
+            <div style="flex:1;">
+                <div style="color:rgba(255,255,255,.75);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;">Confirm Deletion</div>
+                <div style="color:white;font-size:15px;font-weight:700;margin-top:1px;">Delete Selected Records</div>
+            </div>
+        </div>
+        <div style="padding:20px 22px;">
+            <p style="font-size:14px;color:#374151;margin:0 0 4px;">Delete <strong id="cdBulkDeleteCount">0</strong> selected record(s)?</p>
+            <p style="font-size:12px;color:#94a3b8;margin:0 0 18px;">This action cannot be undone.</p>
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+                <button onclick="cdCancelBulkDelete()" style="padding:9px 18px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:600;color:#374151;cursor:pointer;">No, Cancel</button>
+                <button onclick="cdConfirmBulkDelete()" style="padding:9px 20px;background:#dc2626;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Yes, Delete</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -569,9 +681,13 @@ function viewRow(id){
             ['Net TCP',fmtP(d.net_tcp)],
             ['Terms of Payment',fmt(d.terms_of_payment)],
             ['Reservation Date',fmtD(d.reservation_date)],
-            ['Date of Downpayment',fmtD(d.date_of_downpayment)],
             ["Agent's Name",fmt(d.agent_name)],
-            ['Client Status',fmt(d.status)||'No Status'],
+            ['Client Status',fmt(d.client_status)||'No Status'],
+            ['Downpayment Status',fmt(d.downpayment_status)||'— Not Set —'],
+            ['Downpayment Amount',fmtP(d.downpayment_amount)],
+            ['Downpayment Terms',d.downpayment_terms?d.downpayment_terms+' month'+(d.downpayment_terms>1?'s':''):'-'],
+            ['Per Term Amount',fmtP(d.downpayment_per_term)],
+            ['Date of Downpayment',fmtD(d.downpayment_date || d.date_of_downpayment)],
         ];
         document.getElementById('viewContent').innerHTML=fields.map(([l,v])=>`<div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;font-weight:700;color:#1e4575;text-transform:uppercase">${l}</label><div style="font-size:14px;color:#374151;font-weight:500;padding:10px 14px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb">${v}</div></div>`).join('');
         document.getElementById('viewModal').style.display='flex';
@@ -718,8 +834,18 @@ function submitEditForm() {
     });
 }
 
-document.addEventListener('DOMContentLoaded',function(){
+document.addEventListener('DOMContentLoaded', function () {
     cdFilter();
+    cdInitScrollbar();
+
+    // Force recalculation after the page fully renders
+    setTimeout(function () {
+        window.dispatchEvent(new Event('resize'));
+    }, 100);
+
+    setTimeout(function () {
+        window.dispatchEvent(new Event('resize'));
+    }, 500);
 
     // Highlight row from permission notification
     const params = new URLSearchParams(window.location.search);
@@ -727,6 +853,10 @@ document.addEventListener('DOMContentLoaded',function(){
     const hlStatus = params.get('status');
     const hlAction = params.get('action');
     if (highlightId) {
+        // Strip highlight params from the URL now that we've read them, so a
+        // browser refresh loads a clean URL and the highlight does not reappear.
+        window.history.replaceState({}, '', window.location.pathname);
+
         // Wait for full page render then scroll
         function doHighlight() {
             const row = document.querySelector('tr[data-id="' + highlightId + '"]');
@@ -737,25 +867,29 @@ document.addEventListener('DOMContentLoaded',function(){
 
             const isApproved = hlStatus === 'approved';
             const isPending  = hlStatus === 'pending';
-            const bgColor    = isApproved ? 'rgba(22,163,74,.15)' : (isPending ? 'rgba(234,179,8,.15)' : 'rgba(220,38,38,.12)');
-            const borderColor= isApproved ? '#16a34a' : (isPending ? '#d97706' : '#dc2626');
-            const badgeColor = isApproved ? '#16a34a' : (isPending ? '#d97706' : '#dc2626');
+            const isDuplicate= hlStatus === 'duplicate';
+            const bgColor    = isApproved ? 'rgba(22,163,74,.15)' : (isPending ? 'rgba(234,179,8,.15)' : (isDuplicate ? 'rgba(30,69,117,.12)' : 'rgba(220,38,38,.12)'));
+            const borderColor= isApproved ? '#16a34a' : (isPending ? '#d97706' : (isDuplicate ? '#1e4575' : '#dc2626'));
+            const badgeColor = isApproved ? '#16a34a' : (isPending ? '#d97706' : (isDuplicate ? '#1e4575' : '#dc2626'));
             const badgeText  = isApproved ? '✓ Approved — Can ' + (hlAction||'edit')
                              : (isPending  ? '👁 ' + (hlAction||'edit') + ' requested'
-                             : '✕ Rejected');
+                             : (isDuplicate ? ''
+                             : '✕ Rejected'));
 
             row.style.background   = bgColor;
             row.style.outline      = '2px solid ' + borderColor;
             row.style.outlineOffset= '-1px';
             row.style.transition   = 'all .3s';
 
-            const firstTd = row.querySelector('td');
-            if (firstTd && !firstTd.querySelector('.hl-badge')) {
+            // Badge goes on the index cell (2nd cell) — 1st cell is the select checkbox
+            const cells = row.querySelectorAll('td');
+            const badgeTd = cells[1] || cells[0];
+            if (badgeTd && !badgeTd.querySelector('.hl-badge')) {
                 const badge = document.createElement('span');
                 badge.className = 'hl-badge';
                 badge.style.cssText = 'display:inline-block;margin-left:6px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:' + badgeColor + ';color:white;vertical-align:middle;';
                 badge.textContent = badgeText;
-                firstTd.appendChild(badge);
+                badgeTd.appendChild(badge);
             }
 
             // Find the scrollable container and scroll to row
@@ -808,6 +942,10 @@ document.addEventListener('DOMContentLoaded',function(){
         setTimeout(doHighlight, 800);
         setTimeout(doHighlight, 1500);
     }
+
+    @if(session('duplicate_error'))
+    showDuplicateModal({{ (int) session('duplicate_id') }});
+    @endif
 });
 
 const MONTH_ALIASES = {
@@ -818,6 +956,76 @@ const MONTH_ALIASES = {
     'jun':'jun','jul':'jul','aug':'aug','sep':'sep',
     'oct':'oct','nov':'nov','dec':'dec'
 };
+
+function cdInitScrollbar() {
+    var wrap  = document.querySelector('.cd-table-wrap');
+    var track = document.getElementById('cdScrollTrack');
+    var thumb = document.getElementById('cdScrollThumb');
+    if (!wrap || !track || !thumb) return;
+
+    function update() {
+        var scrollable = wrap.scrollWidth > wrap.clientWidth + 1;
+        track.style.display = scrollable ? 'block' : 'none';
+        if (!scrollable) return;
+        var trackWidth = track.clientWidth;
+        var thumbWidth = Math.max(30, (wrap.clientWidth / wrap.scrollWidth) * trackWidth);
+        thumb.style.width = thumbWidth + 'px';
+        var maxThumbLeft  = trackWidth - thumbWidth;
+        var maxScrollLeft = wrap.scrollWidth - wrap.clientWidth;
+        var ratio = maxScrollLeft > 0 ? wrap.scrollLeft / maxScrollLeft : 0;
+        thumb.style.left = (ratio * maxThumbLeft) + 'px';
+    }
+
+    function scrollToThumbLeft(newLeft) {
+        var trackWidth   = track.clientWidth;
+        var thumbWidth   = thumb.offsetWidth;
+        var maxThumbLeft = trackWidth - thumbWidth;
+        newLeft = Math.min(maxThumbLeft, Math.max(0, newLeft));
+        thumb.style.left = newLeft + 'px';
+        var maxScrollLeft = wrap.scrollWidth - wrap.clientWidth;
+        wrap.scrollLeft = maxThumbLeft > 0 ? (newLeft / maxThumbLeft) * maxScrollLeft : 0;
+    }
+
+    update();
+    window.addEventListener('resize', update);
+    wrap.addEventListener('scroll', update);
+
+    var dragging = false, startX = 0, startLeft = 0;
+
+    thumb.addEventListener('mousedown', function(e) {
+        dragging = true;
+        thumb.classList.add('dragging');
+        startX = e.clientX;
+        startLeft = thumb.offsetLeft;
+        e.preventDefault();
+    });
+    document.addEventListener('mousemove', function(e) {
+        if (!dragging) return;
+        scrollToThumbLeft(startLeft + (e.clientX - startX));
+    });
+    document.addEventListener('mouseup', function() {
+        if (dragging) { dragging = false; thumb.classList.remove('dragging'); }
+    });
+
+    // Click on the track (not the thumb itself) jumps to that position
+    track.addEventListener('click', function(e) {
+        if (e.target === thumb) return;
+        var rect = track.getBoundingClientRect();
+        scrollToThumbLeft((e.clientX - rect.left) - (thumb.offsetWidth / 2));
+    });
+
+    // Touch support
+    thumb.addEventListener('touchstart', function(e) {
+        dragging = true;
+        startX = e.touches[0].clientX;
+        startLeft = thumb.offsetLeft;
+    }, { passive: true });
+    document.addEventListener('touchmove', function(e) {
+        if (!dragging) return;
+        scrollToThumbLeft(startLeft + (e.touches[0].clientX - startX));
+    }, { passive: true });
+    document.addEventListener('touchend', function() { dragging = false; });
+}
 
 function cdFilter() {
     var raw = (document.getElementById('cdSearch')?.value || '').toLowerCase().trim();
@@ -830,30 +1038,34 @@ function cdFilter() {
     var rows = document.querySelectorAll('#cdTableBody tr');
     var visible = 0;
     rows.forEach(function(r) {
-        var text = r.textContent.toLowerCase();
         var cells = r.querySelectorAll('td');
+        if (!cells.length) { return; } // skip "no records" placeholder row
 
-        // Keyword search
-        var keyMatch = keywords.every(k => text.includes(k));
+        // Keyword search — matches Name, Agent, Project, Client, Block & Lot
+        // (stored on the row as data-search) so it stays accurate regardless of column order.
+        var searchText = (r.dataset.search || '').toLowerCase();
+        var keyMatch = keywords.every(k => searchText.includes(k));
 
         // Status filter
         var statusCell = r.querySelector('[data-client-status]');
         var rowStatus  = statusCell ? statusCell.getAttribute('data-client-status').toLowerCase() : '';
         var statusMatch = true;
+        var statusMatch = true;
         if (statusFilter === 'done')           statusMatch = rowStatus === 'done';
+        else if (statusFilter === 'pending')   statusMatch = rowStatus === 'pending';
         else if (statusFilter === 'cancelled') statusMatch = rowStatus === 'cancelled';
         else if (statusFilter === 'none')      statusMatch = rowStatus === '';
 
-        // Reservation date month filter — column index 11
+        // Reservation date month filter — column index 13 (checkbox + index columns shift indices by 2)
         var reservationMatch = true;
-        if (reservationMonth && cells[11]) {
-            reservationMatch = cells[11].textContent.toLowerCase().includes(reservationMonth);
+        if (reservationMonth && cells[13]) {
+            reservationMatch = cells[13].textContent.toLowerCase().includes(reservationMonth);
         }
 
-        // Downpayment date month filter — column index 13
+        // Downpayment date month filter — column index 15
         var downpaymentMatch = true;
-        if (downpaymentMonth && cells[13]) {
-            downpaymentMatch = cells[13].textContent.toLowerCase().includes(downpaymentMonth);
+        if (downpaymentMonth && cells[15]) {
+            downpaymentMatch = cells[15].textContent.toLowerCase().includes(downpaymentMonth);
         }
 
         var show = keyMatch && statusMatch && reservationMatch && downpaymentMatch;
@@ -862,7 +1074,193 @@ function cdFilter() {
     });
     var countEl = document.getElementById('cdCount');
     if (countEl) countEl.textContent = visible + ' record(s) shown';
+
+    cdUpdateBulkBar();
 }
+
+// ── Multi-select / bulk delete ──
+function cdToggleSelectAll(source) {
+    var rows = document.querySelectorAll('#cdTableBody tr');
+    rows.forEach(function(r) {
+        if (r.style.display === 'none') return; // only affect currently visible/filtered rows
+        var cb = r.querySelector('.cd-row-checkbox');
+        if (cb) cb.checked = source.checked;
+    });
+    cdUpdateBulkBar();
+}
+
+function cdUpdateBulkBar() {
+    var checked = document.querySelectorAll('.cd-row-checkbox:checked');
+    var btn = document.getElementById('cdBulkDeleteBtn');
+    if (btn) {
+        btn.textContent = 'Delete Selected (' + checked.length + ')';
+        btn.disabled = checked.length === 0;
+    }
+
+    // Keep the "select all" checkbox in sync with the visible rows
+    var selectAll = document.getElementById('cdSelectAll');
+    if (selectAll) {
+        var visibleCheckboxes = Array.from(document.querySelectorAll('#cdTableBody tr'))
+            .filter(function(r) { return r.style.display !== 'none'; })
+            .map(function(r) { return r.querySelector('.cd-row-checkbox'); })
+            .filter(Boolean);
+        selectAll.checked = visibleCheckboxes.length > 0 && visibleCheckboxes.every(function(cb) { return cb.checked; });
+        selectAll.indeterminate = !selectAll.checked && visibleCheckboxes.some(function(cb) { return cb.checked; });
+    }
+}
+
+function cdGetSelectedIds() {
+    return Array.from(document.querySelectorAll('.cd-row-checkbox:checked')).map(function(cb) { return cb.value; });
+}
+
+function cdDeleteSelected() {
+    var ids = cdGetSelectedIds();
+    if (!ids.length) {
+        alert('Please select at least one record first (use the checkboxes on the left).');
+        return;
+    }
+
+    if (!IS_ADMIN) {
+        alert('Bulk delete is only available to admins. Please delete records individually — each will go through the usual permission request flow.');
+        return;
+    }
+
+    // Open the custom confirm modal instead of relying on the native confirm(),
+    // which browsers can silently suppress after repeated dialogs on a page.
+    document.getElementById('cdBulkDeleteCount').textContent = ids.length;
+    document.getElementById('cdBulkDeleteModal').style.display = 'flex';
+}
+
+function cdCancelBulkDelete() {
+    document.getElementById('cdBulkDeleteModal').style.display = 'none';
+}
+
+function cdConfirmBulkDelete() {
+    var ids = cdGetSelectedIds();
+    document.getElementById('cdBulkDeleteModal').style.display = 'none';
+    if (!ids.length) return;
+
+    var btn = document.getElementById('cdBulkDeleteBtn');
+    btn.disabled = true;
+    btn.textContent = 'Deleting...';
+
+    var csrfMeta = document.querySelector('meta[name=csrf-token]');
+    if (!csrfMeta) {
+        console.error('[cdConfirmBulkDelete] No <meta name="csrf-token"> found on this page — cannot send authenticated requests.');
+        alert('Missing CSRF token meta tag on this page. Cannot delete records — check the console for details.');
+        btn.disabled = false;
+        btn.textContent = 'Delete Selected (' + ids.length + ')';
+        return;
+    }
+    var csrf = csrfMeta.content;
+
+    Promise.all(ids.map(function(id) {
+        return fetch(`/client-database/${id}`, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' }
+        });
+    })).then(function() {
+        window.location.reload();
+    }).catch(function(err) {
+        console.error('[cdConfirmBulkDelete] error during delete:', err);
+        alert('Some records may not have been deleted. Reloading the page...');
+        window.location.reload();
+    });
+}
+
+// ── Required + non-negative validation for Lot Area, Price per SQM, Discount ──
+function cdValidateNumericFields() {
+    var lotArea  = document.getElementById('f_lot_area').value.trim();
+    var priceSqm = document.getElementById('f_price_sqm').value.trim();
+    var discount = document.getElementById('f_discount_pct').value.trim();
+
+    if (lotArea === '') {
+        alert('Please enter the Lot Area.');
+        return false;
+    }
+    if (parseFloat(lotArea) < 0) {
+        alert('Lot Area cannot be negative.');
+        return false;
+    }
+    if (priceSqm === '') {
+        alert('Please enter the Price per SQM.');
+        return false;
+    }
+    if (parseFloat(priceSqm) < 0) {
+        alert('Price per SQM cannot be negative.');
+        return false;
+    }
+    if (discount === '') {
+        alert('Please enter the Discount (%). Enter 0 if there is no discount.');
+        return false;
+    }
+    if (parseFloat(discount) < 0) {
+        alert('Discount (%) cannot be negative.');
+        return false;
+    }
+    return true;
+}
+
+// ── Clear button — uses the app's real confirm modal, since window.confirm ──
+// is globally overridden (always returns true) in layouts/dashboard.blade.php.
+document.getElementById('commissionClearBtn').addEventListener('click', function () {
+    window.showConfirmModal('Clear all entered data on this form?').then(function (confirmed) {
+        if (!confirmed) return;
+        document.getElementById('commissionForm').reset();
+    });
+});
+
+// ── Duplicate client record check (restored from previous version) ──
+document.getElementById('commissionForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var form = this;
+
+    if (!cdValidateNumericFields()) {
+        return;
+    }
+
+    window.showConfirmModal('Submit this client record?').then(function (confirmed) {
+        if (!confirmed) return;
+
+        var clientName  = (form.querySelector('[name="client_name"]').value || '').trim();
+        var projectName = (form.querySelector('[name="project_name"]').value || '').trim();
+        var blockLot    = (form.querySelector('[name="block_lot_number"]').value || '').trim();
+
+        var params = new URLSearchParams({
+            client_name: clientName,
+            project_name: projectName,
+            block_lot_number: blockLot
+        });
+
+        fetch('/api/client-database/check-duplicate?' + params.toString())
+            .then(r => r.json())
+            .then(data => {
+                if (data.duplicate) {
+                    showDuplicateModal(data.id);
+                } else {
+                    form.submit();
+                }
+            })
+            .catch(() => {
+                form.submit();
+            });
+    });
+});
+
+function showDuplicateModal(recordId) {
+    var modal = document.getElementById('duplicateRecordModal');
+    modal.dataset.recordId = recordId;
+    modal.style.display = 'flex';
+}
+function closeDuplicateModal() {
+    document.getElementById('duplicateRecordModal').style.display = 'none';
+}
+function goToDuplicateRecord() {
+    var modal = document.getElementById('duplicateRecordModal');
+    var id = modal.dataset.recordId;
+    window.location.href = '{{ route("client-database") }}?highlight=' + id + '&status=duplicate';
+}
+
 // ── Prefill from site visit Reserve button ──
 (function() {
     const p = new URLSearchParams(window.location.search);
@@ -972,7 +1370,7 @@ function cdFilter() {
                 </div>
                 <button onclick="setupInstallments()" style="padding:9px 16px;background:linear-gradient(135deg,#1e4575,#2563eb);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Set Terms</button>
             </div>
-            <div id="dp_installments_list" style="padding:16px 24px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:10px;min-height:60px">
+            <div id="dp_installments_list" style="padding:16px 24px;overflow-y:auto;overflow-x:auto;-webkit-overflow-scrolling:touch;flex:1;display:flex;flex-direction:column;gap:10px;min-height:60px">
                 <div style="text-align:center;color:#94a3b8;padding:20px;font-size:13px;">Set amount and terms, then click "Set Terms".</div>
             </div>
         </div>
@@ -1022,6 +1420,42 @@ let _dpRecordId = null;
 const _dpCsrf = document.querySelector('meta[name=csrf-token]')?.content || '';
 const _isAdmin = {{ auth()->user()->isAdmin() ? 'true' : 'false' }};
 
+function openDPModalFromBtn(btn) {
+    openDPModal(
+        parseInt(btn.dataset.id),
+        parseFloat(btn.dataset.amount) || 0,
+        parseInt(btn.dataset.terms) || 1,
+        parseFloat(btn.dataset.perTerm) || 0,
+        btn.dataset.status || '',
+        btn.dataset.dpDate || ''
+    );
+}
+
+function updateClientStatusSelect(id, clientStatus) {
+    const sel = document.getElementById('csSel_' + id);
+    if (!sel) return;
+    sel.value = clientStatus || '';
+    sel.dataset.clientStatus = (clientStatus || '').toLowerCase();
+    const bg  = clientStatus === 'Done' ? '#dcfce7' : (clientStatus === 'Cancelled' ? '#fee2e2' : (clientStatus === 'Pending' ? '#fef3c7' : '#f1f5f9'));
+    const col = clientStatus === 'Done' ? '#166534' : (clientStatus === 'Cancelled' ? '#991b1b' : (clientStatus === 'Pending' ? '#92400e' : '#64748b'));
+    sel.style.background = bg;
+    sel.style.color = col;
+}
+
+function updateDPStatusBadge(id, status, terms, amount) {
+    const btn = document.getElementById('dpBtn_' + id);
+    if (!btn) return;
+    status = status || '';
+    const isPaid = status === 'Paid' || status === 'Spot Paid';
+    const hasStatus = status && status !== '— Set —';
+    btn.style.background = isPaid ? '#dcfce7' : (hasStatus ? '#fef3c7' : '#f1f5f9');
+    btn.style.color      = isPaid ? '#166534' : (hasStatus ? '#92400e' : '#64748b');
+    btn.textContent = status || '— Set —';
+    btn.dataset.status = status;
+    if (terms  !== undefined) btn.dataset.terms  = terms;
+    if (amount !== undefined) btn.dataset.amount = amount;
+}
+
 function openDPModal(id, amount, terms, perTerm, status, dpDate) {
     _dpRecordId = id;
 
@@ -1030,7 +1464,19 @@ function openDPModal(id, amount, terms, perTerm, status, dpDate) {
 
     // Populate fields
     document.getElementById('dp_total_amount').value  = amount > 0 ? amount : '';
-    document.getElementById('dp_terms_select').value  = Math.min(terms || 1, 6);
+
+    // The quick picker only has options 1–6 built in. If this plan has more
+    // terms (created via "Others"), add a matching option on the fly so the
+    // dropdown actually reflects the real count instead of clamping to 6.
+    var termsSelect = document.getElementById('dp_terms_select');
+    var actualTerms  = terms || 1;
+    if (actualTerms > 6 && !termsSelect.querySelector('option[value="' + actualTerms + '"]')) {
+        var opt = document.createElement('option');
+        opt.value = actualTerms;
+        opt.textContent = actualTerms;
+        termsSelect.appendChild(opt);
+    }
+    termsSelect.value = actualTerms;
     document.getElementById('dp_spot_amount').value   = amount > 0 ? amount : '';
     document.getElementById('dp_spot_date').value     = dpDate || '';
     document.getElementById('dp_others_amount').value = amount > 0 ? amount : '';
@@ -1067,10 +1513,8 @@ function openDPModal(id, amount, terms, perTerm, status, dpDate) {
     if (isSpotPaid) {
         selectDPType('spot');
     } else if (status && (status.includes('month') || status === 'Partial' || status === 'Paid')) {
+        // Already has installments set up (any term count, including >6 from "Others") — show the paid/unpaid list
         selectDPType('installment');
-        loadInstallments();
-    } else if (terms > 6) {
-        selectDPType('others');
         loadInstallments();
     } else if (terms > 1) {
         selectDPType('installment');
@@ -1144,11 +1588,26 @@ function setupOthersInstallments() {
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': _dpCsrf },
         body: JSON.stringify({ terms, total_amount: amount })
     }).then(r => r.json()).then(data => {
+        // Sync the installment view's own header fields so they reflect
+        // what was just entered here, instead of showing stale 0.00 / 1
+        document.getElementById('dp_total_amount').value = amount > 0 ? amount : '';
+        var termsSelect = document.getElementById('dp_terms_select');
+        if (!termsSelect.querySelector('option[value="' + terms + '"]')) {
+            var opt = document.createElement('option');
+            opt.value = terms;
+            opt.textContent = terms;
+            termsSelect.appendChild(opt);
+        }
+        termsSelect.value = terms;
+
         // Switch to installment view to show the terms
         selectDPType('installment');
         renderInstallments(data);
+        const status = terms + ' month' + (terms > 1 ? 's' : '');
+        updateDPStatusBadge(_dpRecordId, status, terms, amount);
+        updateClientStatusSelect(_dpRecordId, 'Pending');
     });
-}
+}   
 
 function loadInstallments() {
     fetch(`/api/client-database/${_dpRecordId}/installments`)
@@ -1162,7 +1621,12 @@ function setupInstallments() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': _dpCsrf },
         body: JSON.stringify({ terms, total_amount: amount })
-    }).then(r => r.json()).then(data => renderInstallments(data));
+    }).then(r => r.json()).then(data => {
+        renderInstallments(data);
+        const status = terms + ' month' + (terms > 1 ? 's' : '');
+        updateDPStatusBadge(_dpRecordId, status, terms, amount);
+        updateClientStatusSelect(_dpRecordId, 'Pending');
+    });
 }
 
 function renderInstallments(list) {
@@ -1194,7 +1658,7 @@ function renderInstallments(list) {
             `<input type="date" id="inst_date_${inst.id}" style="padding:8px 10px;border:none;border-left:1.5px solid #e2e8f0;outline:none;font-size:12px;background:transparent;color:#374151;" title="Date of payment">`;
 
         return `
-            <div style="display:flex;align-items:center;gap:0;border:1.5px solid ${border};border-radius:10px;overflow:hidden;background:${bg};">
+            <div style="display:flex;align-items:center;gap:0;border:1.5px solid ${border};border-radius:10px;overflow:hidden;background:${bg};min-width:460px;">
                 <span style="font-size:13px;font-weight:700;color:#1e4575;padding:10px 14px;white-space:nowrap;border-right:1.5px solid ${border};">Term ${inst.term_number}</span>
                 ${amountInput}
                 ${dateInput}
@@ -1236,8 +1700,13 @@ function markPaidWithDate(instId, btn) {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': _dpCsrf },
         body: JSON.stringify({ paid_date: date })
-    }).then(r => r.json()).then(() => loadInstallments())
-      .catch(() => { btn.disabled = false; btn.textContent = 'Paid'; alert('Failed to save. Please try again.'); });
+    }).then(r => r.json()).then(res => {
+        loadInstallments();
+        if (res.status) {
+            updateDPStatusBadge(_dpRecordId, res.status);
+            if (res.status === 'Paid') updateClientStatusSelect(_dpRecordId, 'Done');
+        }
+    }).catch(() => { btn.disabled = false; btn.textContent = 'Paid'; alert('Failed to save. Please try again.'); });
 }
 
 function unmarkPaid(instId) {
@@ -1246,7 +1715,10 @@ function unmarkPaid(instId) {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': _dpCsrf },
         body: JSON.stringify({})
-    }).then(r => r.json()).then(() => loadInstallments());
+    }).then(r => r.json()).then(res => {
+        loadInstallments();
+        updateDPStatusBadge(_dpRecordId, res.status || '');
+    });
 }
 </script>
 

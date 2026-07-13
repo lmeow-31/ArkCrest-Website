@@ -4,11 +4,22 @@
 
 <style>
 
-/* Remove page-content padding for settings full-bleed layout */
+/* Remove page-content padding for settings full-bleed layout (desktop only —
+   on mobile the sidebar stacks above the content and the page itself needs
+   to scroll, so we must not clip it with overflow:hidden there) */
 
-.page-content { padding: 0 !important; overflow: hidden !important; height: 100% !important; }
+@media (min-width: 769px) {   
+    .page-content { padding: 0 !important; overflow: hidden !important; height: 100% !important; }
+    .main-content { overflow: hidden !important; }
+}
 
-.main-content { overflow: hidden !important; }
+@media (max-width: 768px) {
+    /* Restore the site's normal scroll pattern: .page-content is the one
+       bounded, scrollable box (there's no scrollable ancestor above it —
+       .content-wrapper/.main-content are overflow:hidden by design). */
+    .page-content { padding: 0 !important; overflow-y: auto !important; height: 100% !important; flex: 1; }
+    .main-content { overflow: hidden !important; }
+}
 
 /* ===== SETTINGS PAGE ===== */
 
@@ -68,7 +79,7 @@
 
     padding: 0 18px;
 
-    height: 100px;
+    height: 64px;
 
     display: flex;
 
@@ -83,7 +94,6 @@
     flex-shrink: 0;
 
 }
-
 .st-sidebar-hdr h2 { font-size: 15px; font-weight: 700; color: white; margin: 0; letter-spacing: .3px; }
 
 .st-sidebar-hdr svg { color: #d4a03a; flex-shrink: 0; }
@@ -92,7 +102,7 @@
 
     font-size: 9px; font-weight: 700; color: rgba(255,255,255,.5);
 
-    letter-spacing: 1.5px; padding: 18px 18px 6px; text-transform: uppercase;
+    letter-spacing: 1.5px; padding: 12px 18px 4px; text-transform: uppercase;
 
 }
 
@@ -100,7 +110,7 @@
 
     display: flex; align-items: center; gap: 10px;
 
-    width: calc(100% - 16px); margin: 1px 8px; padding: 10px 12px;
+    width: calc(100% - 16px); margin: 1px 8px; padding: 8px 12px;
 
     background: none; border: none; font-size: 13px; color: rgba(255,255,255,.75);
 
@@ -351,141 +361,21 @@
 </style>
 
 <div class="st-page-wrap">
-  {{-- Settings Sidebar --}}
-
-  <div class="st-sidebar">
-
-    <div class="st-sidebar-hdr">
-
-      <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-
-      <h2>Settings</h2>
-
-    </div>
-
-    <div class="st-nav-scroll">
-
-      <div class="st-nav-label">Account</div>
-
-      <button class="st-nav-btn" id="nav-profile" onclick="showPanel('profile')">
-
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-
-        My Profile
-
-      </button>
-
-      <button class="st-nav-btn" id="nav-employee-info" onclick="showPanel('employee-info')">
-
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2"/></svg>
-
-        About Me
-
-      </button>
-
-      <button class="st-nav-btn" id="nav-system" onclick="showPanel('system')">
-
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
-
-        System Info
-
-      </button>
-
-      <button class="st-nav-btn" id="nav-notes" onclick="showPanel('notes')">
-
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-
-        My Notes
-
-      </button>
-
-      <button class="st-nav-btn" id="nav-privacy" onclick="showPanel('privacy')">
-
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-
-        Privacy &amp; Policy
-
-      </button>
-
-      @php $sHidden = $hiddenSections ?? []; $isAdmin = auth()->user()->isAdmin(); $canSeeS = fn($k) => $isAdmin || !in_array($k, $sHidden); @endphp
-
-      @if($isAdmin || array_filter(['settings.users','settings.visibility','settings.activity','settings.deleted','settings.permissions','settings.teams','settings.period-lock','settings.employee','settings.personnel'], fn($k) => !in_array($k, $sHidden)))
-      <div class="st-nav-label">Admin</div>
-      @endif
-
-      @if($canSeeS('settings.users'))
-      <button class="st-nav-btn" id="nav-users" onclick="showPanel('users')">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-        User Management
-      </button>
-      @endif
-
-      @if($isAdmin || $canSeeS('settings.visibility'))
-      <button class="st-nav-btn" id="nav-visibility" onclick="showPanel('visibility')">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-        Page Visibility
-      </button>
-      @endif
-
-      @if($canSeeS('settings.activity'))
-      <button class="st-nav-btn" id="nav-activity" onclick="showPanel('activity')">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-        Activity Log
-      </button>
-      @endif
-
-      @if($canSeeS('settings.deleted'))
-      <button class="st-nav-btn" id="nav-deleted" onclick="showPanel('deleted')">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-        Deleted Records
-      </button>
-      @endif
-
-      @if($canSeeS('settings.permissions'))
-      <button class="st-nav-btn" id="nav-permission-requests" onclick="showPanel('permission-requests')">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
-        Permission Requests
-        @php $pendingPerms = \App\Models\PermissionRequest::where('status','pending')->count(); @endphp
-        @if($pendingPerms > 0)<span style="background:#ef4444;color:white;border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:auto;">{{ $pendingPerms }}</span>@endif
-      </button>
-      @endif
-
-      @if($canSeeS('settings.teams'))
-      <button class="st-nav-btn" id="nav-teams" onclick="showPanel('teams')">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-        Team Management
-      </button>
-      @endif
-
-      @if($isAdmin)
-      <button class="st-nav-btn" id="nav-properties" onclick="showPanel('properties')">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-        Property Management
-      </button>
-      @endif
-
-      @if($canSeeS('settings.period-lock'))
-      <button class="st-nav-btn" id="nav-period-lock" onclick="showPanel('period-lock')">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-        Period Lock
-      </button>
-      @endif
-
-
-    </div>
-
-  </div>
-
+  @php
+    $sHidden = $hiddenSections ?? []; $isAdmin = auth()->user()->isAdmin(); $canSeeS = fn($k) => $isAdmin || !in_array($k, $sHidden);
+    $activePanel = request('panel') ?: session('open_section', 'profile');
+    $panelClass = fn($key) => 'st-panel' . ($activePanel === $key ? ' active' : '');
+  @endphp
   {{-- Main Content --}}
 
-  <div class="st-content">
+  <div class="st-content" style="width:100%;">
 
     @if(session('success'))<div class="st-alert">&#10003; {{ session('success') }}</div>@endif
     @if(session('error'))<div class="st-alert" style="border-color:#ef4444;background:#fef2f2;color:#dc2626;">&#9888; {{ session('error') }}</div>@endif
 
     {{-- PROFILE PANEL --}}
 
-    <div class="st-panel active" id="panel-profile">
+    <div class="{{ $panelClass('profile') }}" id="panel-profile">
 
       <div class="st-page-header"><div class="st-page-title">My Profile</div><div class="st-page-sub">Update your personal information and password</div></div>
 
@@ -565,11 +455,11 @@
 
       </div></div>
 
-      <div class="st-card"><div class="st-card-hdr"><div class="st-card-hdr-text"><h3>Change Password</h3><p>Update your login password</p></div></div>
+<div class="st-card"><div class="st-card-hdr"><div class="st-card-hdr-text"><h3>Change Password</h3><p>Update your login password</p></div></div>
 
       <div class="st-card-body">
 
-        <form method="POST" action="{{ route('settings.profile') }}">
+        <form method="POST" action="{{ route('settings.password') }}">
 
           @csrf
 
@@ -579,7 +469,15 @@
 
               <label class="st-label">Current Password</label>
 
-              <input class="st-input" type="password" name="current_password">
+              <div style="position:relative;">
+                <input class="st-input" type="password" name="current_password" id="settings_current_password" style="width:100%;box-sizing:border-box;padding-right:38px;">
+                <button type="button" onclick="toggleSettingsPwdField('settings_current_password', this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:2px;display:flex;color:#94a3b8;" aria-label="Show password">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+              @error('current_password')
+                <div style="color:#dc2626;font-size:12px;margin-top:4px;">{{ $message }}</div>
+              @enderror
 
             </div>
 
@@ -587,9 +485,21 @@
 
               <label class="st-label">New Password</label>
 
-              <input class="st-input" type="password" name="password" id="settings_new_password" placeholder="Min. 8 chars, upper, lower, number, symbol" oninput="checkSettingsPwd(this.value)">
+              <div style="position:relative;">
+                <input class="st-input" type="password" name="password" id="settings_new_password" placeholder="Min. 8 chars, upper, lower, number, symbol" oninput="checkSettingsPwd(this.value)" style="width:100%;box-sizing:border-box;padding-right:38px;">
+                <button type="button" onclick="toggleSettingsPwdField('settings_new_password', this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:2px;display:flex;color:#94a3b8;" aria-label="Show password">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
               <div id="settings-pwd-bar" style="height:3px;border-radius:2px;margin-top:5px;background:#e2e8f0;overflow:hidden;"><div id="settings-pwd-fill" style="height:100%;width:0;transition:width .3s,background .3s;"></div></div>
               <div id="settings-pwd-text" style="font-size:10px;color:#94a3b8;margin-top:2px;"></div>
+              @if ($errors->has('password'))
+                <ul style="color:#dc2626;font-size:12px;margin-top:4px;padding-left:18px;">
+                  @foreach ($errors->get('password') as $msg)
+                    <li>{{ $msg }}</li>
+                  @endforeach
+                </ul>
+              @endif
 
             </div>
 
@@ -597,7 +507,12 @@
 
               <label class="st-label">Confirm New Password</label>
 
-              <input class="st-input" type="password" name="password_confirmation">
+              <div style="position:relative;">
+                <input class="st-input" type="password" name="password_confirmation" id="settings_confirm_password" style="width:100%;box-sizing:border-box;padding-right:38px;">
+                <button type="button" onclick="toggleSettingsPwdField('settings_confirm_password', this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:2px;display:flex;color:#94a3b8;" aria-label="Show password">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
 
             </div>
 
@@ -651,11 +566,12 @@
 
       </div></div>
 
+
     </div>
 
     {{-- ABOUT ME PANEL --}}
 
-    <div class="st-panel" id="panel-employee-info">
+    <div class="{{ $panelClass('employee-info') }}" id="panel-employee-info">
 
       <div class="st-page-header"><div class="st-page-title">About Me</div><div class="st-page-sub">Your employment details on record</div></div>
 
@@ -703,7 +619,7 @@
 
     {{-- SYSTEM INFO PANEL --}}
 
-    <div class="st-panel" id="panel-system">
+    <div class="{{ $panelClass('system') }}" id="panel-system">
 
       <div class="st-page-header"><div class="st-page-title">System Info</div><div class="st-page-sub">Application and environment details</div></div>
 
@@ -727,7 +643,7 @@
 
     {{-- PRIVACY PANEL --}}
 
-    <div class="st-panel" id="panel-privacy">
+    <div class="{{ $panelClass('privacy') }}" id="panel-privacy">
 
       <div class="st-page-header"><div class="st-page-title">Privacy &amp; Policy</div><div class="st-page-sub">Edit the privacy policy shown on the login page</div></div>
 
@@ -755,7 +671,7 @@
 
     {{-- NOTES PANEL --}}
 
-    <div class="st-panel" id="panel-notes">
+    <div class="{{ $panelClass('notes') }}" id="panel-notes">
 
       <div class="st-page-header"><div class="st-page-title">My Notes</div><div class="st-page-sub">Personal notes and reminders</div></div>
 
@@ -805,7 +721,7 @@
 
     {{-- USERS PANEL --}}
 
-    <div class="st-panel" id="panel-users">
+    <div class="{{ $panelClass('users') }}" id="panel-users">
 
       <div class="st-page-header"><div class="st-page-title">User Management</div><div class="st-page-sub">Approve registrations, assign roles, manage users</div></div>
 
@@ -932,7 +848,7 @@
 
     {{-- VISIBILITY PANEL --}}
 
-    <div class="st-panel" id="panel-visibility">
+    <div class="{{ $panelClass('visibility') }}" id="panel-visibility">
 
       <div class="st-page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
         <div>
@@ -1095,7 +1011,7 @@
 
     {{-- ACTIVITY LOG PANEL --}}
 
-    <div class="st-panel" id="panel-activity">
+    <div class="{{ $panelClass('activity') }}" id="panel-activity">
 
       <div class="st-page-header"><div class="st-page-title">Activity Log</div><div class="st-page-sub">Recent system activity and audit trail</div></div>
 
@@ -1137,7 +1053,7 @@
 
     {{-- DELETED RECORDS PANEL --}}
 
-    <div class="st-panel" id="panel-deleted">
+    <div class="{{ $panelClass('deleted') }}" id="panel-deleted">
 
       <div class="st-page-header"><div class="st-page-title">Deleted Records</div><div class="st-page-sub">Restore or permanently delete records</div></div>
 
@@ -1213,7 +1129,7 @@
 
     {{-- PERMISSION REQUESTS PANEL --}}
 
-    <div class="st-panel" id="panel-permission-requests">
+    <div class="{{ $panelClass('permission-requests') }}" id="panel-permission-requests">
 
       <div class="st-page-header"><div class="st-page-title">Permission Requests</div><div class="st-page-sub">Review and approve or reject staff edit &amp; delete requests</div></div>
 
@@ -1333,7 +1249,7 @@
 
     {{-- TEAMS PANEL --}}
 
-    <div class="st-panel" id="panel-teams">
+    <div class="{{ $panelClass('teams') }}" id="panel-teams">
 
       <div class="st-page-header"><div class="st-page-title">Team Management</div><div class="st-page-sub">Manage sales teams, agents, and quotas</div></div>
 
@@ -1518,7 +1434,7 @@
     @if($isAdmin || $canSeeS('settings.period-lock'))
 
     {{-- PROPERTIES PANEL --}}
-    <div class="st-panel" id="panel-properties">
+    <div class="{{ $panelClass('properties') }}" id="panel-properties">
       <div class="st-page-header"><div class="st-page-title">Property Management</div><div class="st-page-sub">Manage the property dropdown list for site visit forms</div></div>
 
       <div class="st-card">
@@ -1563,7 +1479,7 @@
 
     {{-- PERIOD LOCK PANEL --}}
 
-    <div class="st-panel" id="panel-period-lock">
+    <div class="{{ $panelClass('period-lock') }}" id="panel-period-lock">
 
       <div class="st-page-header"><div class="st-page-title">Period Lock</div><div class="st-page-sub">Lock periods to prevent editing of records</div></div>
 
@@ -1649,7 +1565,7 @@
 
     {{-- EMPLOYEE DIRECTORY PANEL --}}
 
-    <div class="st-panel" id="panel-employee-directory">
+    <div class="{{ $panelClass('employee-directory') }}" id="panel-employee-directory">
 
       <div class="st-page-header"><div class="st-page-title">Employee Data</div><div class="st-page-sub">Edit employment details for all active users</div></div>
 
@@ -1747,7 +1663,7 @@
     @if($isAdmin || $canSeeS('settings.personnel'))
 
     {{-- ARC PERSONNEL CONTACT LIST PANEL --}}
-    <div class="st-panel" id="panel-personnel-contacts">
+    <div class="{{ $panelClass('personnel-contacts') }}" id="panel-personnel-contacts">
       <div class="st-page-header" style="display:flex;align-items:flex-start;justify-content:space-between;">
         <div>
           <div class="st-page-title">ARC Personnel Contact List</div>
@@ -2215,6 +2131,17 @@ function checkSettingsPwd(val) {
     if (!hasSym) reqs.push('symbol');
     text.style.color = colors[score - 1] || '#94a3b8';
     text.textContent = (labels[score - 1] || '') + (reqs.length ? ' — needs: ' + reqs.join(', ') : ' ✓');
+}
+// Show/hide password toggle for the Change Password fields
+function toggleSettingsPwdField(inputId, btn) {
+    var input = document.getElementById(inputId);
+    if (!input) return;
+    var showing = input.type === 'text';
+    input.type = showing ? 'password' : 'text';
+    btn.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+    btn.innerHTML = showing
+        ? '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg>'
+        : '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a19.68 19.68 0 0 1 4.22-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 8 11 8a19.6 19.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
 }
 </script>
 @endsection

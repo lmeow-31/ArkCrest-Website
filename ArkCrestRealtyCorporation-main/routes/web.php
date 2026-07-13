@@ -97,6 +97,7 @@ Route::middleware(['auth', 'no.cache'])->group(function () {
     Route::post('/settings/notifications', [App\Http\Controllers\SettingsController::class, 'saveNotifications'])->name('settings.notifications');
     Route::post('/settings/smtp', [App\Http\Controllers\SettingsController::class, 'saveSmtp'])->name('settings.smtp');
     Route::post('/settings/profile', [App\Http\Controllers\SettingsController::class, 'updateProfile'])->name('settings.profile');
+    Route::post('/settings/password', [App\Http\Controllers\SettingsController::class, 'updatePassword'])->name('settings.password');
     Route::post('/settings/security-question', [App\Http\Controllers\SettingsController::class, 'updateSecurityQuestion'])->name('settings.security-question');
     Route::post('/settings/employee-info', [App\Http\Controllers\SettingsController::class, 'updateEmployeeInfo'])->name('settings.employee-info');
     Route::post('/settings/users/{id}/employee-info', [App\Http\Controllers\SettingsController::class, 'updateUserEmployeeInfo'])->name('settings.users.employee-info');
@@ -141,6 +142,7 @@ Route::middleware(['auth', 'no.cache'])->group(function () {
     // Client Database
     Route::get('/client-database', [App\Http\Controllers\SalesMarketingController::class, 'clientDatabase'])->name('client-database');
     Route::get('/api/client-database/{id}/prefill', [App\Http\Controllers\SalesMarketingController::class, 'prefillCommission']);
+    Route::get('/api/client-database/check-duplicate', [App\Http\Controllers\SalesMarketingController::class, 'checkDuplicate']);
     Route::get('/reserved-clients', [App\Http\Controllers\SalesMarketingController::class, 'reservedClients'])->name('reserved-clients');
     Route::post('/reserved-clients/add', [App\Http\Controllers\SalesMarketingController::class, 'storeReservedClient'])->name('reserved-clients.store');
     Route::put('/reserved-clients/{id}', [App\Http\Controllers\SalesMarketingController::class, 'updateReservedClient'])->name('reserved-clients.update');

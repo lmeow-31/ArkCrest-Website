@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+\@extends('layouts.dashboard')
 @section('title', 'Commission Dashboard')
 @section('content')
 <style>
@@ -8,6 +8,8 @@
 .cd-deco{position:absolute;top:-40px;right:-40px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.06)}
 .cd-deco2{position:absolute;top:40px;right:120px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.04)}
 .cd-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+@media (max-width:768px){.cd-stats{grid-template-columns:repeat(2,1fr);gap:12px}.cd-header{padding:22px 20px}.cd-card-hdr{gap:8px}.cd-search input{width:100%}.cd-search{width:100%}}
+@media (max-width:480px){.cd-stats{grid-template-columns:1fr}.cd-stat-val{font-size:19px}}
 .cd-stat{background:white;border-radius:12px;padding:20px;border:1px solid #e8ecf0;box-shadow:0 1px 4px rgba(0,0,0,.05)}
 .cd-stat-val{font-size:22px;font-weight:800;color:#0f172a;line-height:1}
 .cd-stat-lbl{font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-top:4px}

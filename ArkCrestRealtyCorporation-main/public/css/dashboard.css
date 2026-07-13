@@ -2715,6 +2715,20 @@ max-height: 90vh;
 display: flex;
 flex-direction: column;
 }
+/* Fix: .tbl-scroll (used site-wide for scrollable tables) sets
+   max-height:75vh and overflow:auto. Some modal overlay wrappers also carry
+   the tbl-scroll class for consistent scrollbar styling on their inner
+   content, and because that rule loads after .modal in the stylesheet order,
+   it was overriding .modal's full-screen height:100%/position:fixed sizing,
+   capping the whole overlay (not just its content) at 75% of the viewport.
+   This restores full-screen sizing for the overlay; the inner .modal-content
+   box keeps its own scrolling via its explicit inline max-height/overflow. */
+.modal.tbl-scroll {
+max-height: 100% !important;
+height: 100% !important;
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
 .modal-compact {
 max-width: 900px;
 max-height: fit-content;
@@ -3558,6 +3572,18 @@ background: #FFD700 !important;
 .nav-subitem.active .nav-icon {
 color: #FFD700 !important;
 }
+.nav-submenu-label {
+font-size: 10px;
+font-weight: 700;
+color: rgba(255,255,255,.5);
+letter-spacing: 1.2px;
+text-transform: uppercase;
+padding: 10px 12px 4px 28px;
+margin: 0;
+}
+#settingsSubmenu.open {
+max-height: 900px;
+}
 .sidebar-collapsed .dropdown-toggle-btn {
 display: none;
 }
@@ -3789,7 +3815,7 @@ border: 2px solid #f1f1f1;
 .auto-scroll-wrap::-webkit-scrollbar-thumb {
     background: #1e4575 !important;
     border-radius: 9px;
-    border: 3px solid #e2e8f0;  /* creates padding so thumb looks chunky and grabbable */
+    border: 3px solid #e2e8f0; 
     min-width: 40px;
 }
 
